@@ -12,6 +12,6 @@ window.SITE_CONFIG = {
 
   // === ערוצים חלופיים (אופציונלי) ===
   contactEmail: "",
-  githubRepo: "",
+  githubRepo: "aba-tordoz/OTZAR-REB-YOEL",
   formEndpoint: "",
 };
