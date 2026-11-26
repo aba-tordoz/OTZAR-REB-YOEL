@@ -1239,10 +1239,12 @@ def build():
         for f in gd_files:
             raw_title = f.get("title", "")
             low = raw_title.lower().strip()
+            href_low = (f.get("href") or "").lower()
             if any(j in low for j in ["thumbs.db", "folder.jpg", "albumart", "desktop.ini", "copy folder log", ".lnk", ".tmp", ".db", ".ini", ".jpg"]):
                 continue
+            is_google_doc = "docs.google.com/document/d/" in href_low
             ext = low.rsplit(".", 1)[-1] if "." in low else ""
-            if ext not in ("mp3", "wma", "m4a", "wmv", "pdf", "doc", "docx", "txt") and not low.endswith(")"):
+            if not is_google_doc and ext not in ("mp3", "wma", "m4a", "wmv", "pdf", "doc", "docx", "txt") and not low.endswith(")"):
                 continue
             key = ("/".join(f["path"]), re.sub(r'(?:\.(?:wma|wav|mp3|m4a))+$', '', low))
             folder_names_map.setdefault(key, []).append((ext, low, f))
@@ -1263,9 +1265,12 @@ def build():
             sub_str = " › ".join(path[1:]) if len(path) > 1 else top
             blob = " ".join(path) + " " + clean_name
             low_blob = blob.lower()
+            is_google_doc = "docs.google.com/document/d/" in (f.get("href") or "").lower()
             ext = raw_title.lower().rsplit(".", 1)[-1] if "." in raw_title else ""
-            is_doc = ext in ("pdf", "doc", "docx", "txt")
-            is_vid = ext in ("wmv", "mp4")
+            is_doc = is_google_doc or ext in ("pdf", "doc", "docx", "txt")
+            is_vid = (not is_google_doc) and ext in ("wmv", "mp4")
+            if ext == "wma":
+                sub_str = f"{sub_str} (קובץ WMA להורדה)"
             years, yn, decs = extract_years(blob)
             parsha = detect_parsha_or_holiday(blob)
 
@@ -1483,11 +1488,16 @@ def build():
             else:
                 disp_title = clean_name
 
-            rk_q = f"?resourcekey={f['rkey']}" if f.get("rkey") else ""
-            rk_amp = f"&resourcekey={f['rkey']}" if f.get("rkey") else ""
-            preview_url = f"https://drive.google.com/file/d/{f['id']}/preview{rk_q}"
-            dl_url = f"https://drive.google.com/uc?export=download&id={f['id']}{rk_amp}"
-            view_url = f.get("href") or f"https://drive.google.com/file/d/{f['id']}/view{rk_q}"
+            if is_google_doc:
+                preview_url = f"https://docs.google.com/document/d/{f['id']}/preview"
+                dl_url = f"https://docs.google.com/document/d/{f['id']}/export?format=pdf"
+                view_url = f.get("href") or f"https://docs.google.com/document/d/{f['id']}/edit"
+            else:
+                rk_q = f"?resourcekey={f['rkey']}" if f.get("rkey") else ""
+                rk_amp = f"&resourcekey={f['rkey']}" if f.get("rkey") else ""
+                preview_url = f"https://drive.google.com/file/d/{f['id']}/preview{rk_q}"
+                dl_url = f"https://drive.google.com/uc?export=download&id={f['id']}{rk_amp}"
+                view_url = f.get("href") or f"https://drive.google.com/file/d/{f['id']}/view{rk_q}"
 
             unified.append({
                 "id": f"gd_{f['id']}", "t": disp_title,

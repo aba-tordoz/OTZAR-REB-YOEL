@@ -471,6 +471,13 @@
 
   <!-- Persistent Bottom Audio Player Bar -->
   <div id="audioPlayerBar" class="audio-player-bar hidden" role="region" aria-label="נגן שיעורים רציף">
+    <div id="playerErrorBanner" class="container player-error-banner hidden" role="alert">
+      <span id="playerErrorMsg">⚠️ הדפדפן לא הצליח לטעון את קובץ השמע מהשרת החיצוני.</span>
+      <div class="player-error-actions">
+        <a id="playerErrorSourceLink" href="#" target="_blank" rel="noopener" class="btn-outline btn-sm">🌐 נגן בדף המקור ↗</a>
+        <a id="playerErrorDownloadLink" href="#" target="_blank" rel="noopener" class="btn-outline btn-sm">⬇ הורד שמע</a>
+      </div>
+    </div>
     <div class="container player-inner">
       <div class="player-info">
         <div class="player-badge" id="playerSeferBadge">שמע</div>
@@ -501,7 +508,8 @@
           <input type="checkbox" id="playerAutoNext" checked />
           <span>רצף אוטומטי</span>
         </label>
-        <a id="playerDownloadLink" href="#" target="_blank" rel="noopener" class="pill-small-btn" title="פתח / הורד קובץ מקור">⬇</a>
+        <a id="playerSourceLink" href="#" target="_blank" rel="noopener" class="pill-small-btn" title="עבור לדף המקור של השיעור">🔗 מקור ↗</a>
+        <a id="playerDownloadLink" href="#" target="_blank" rel="noopener" class="pill-small-btn" title="הורד קובץ שמע">⬇</a>
         <button type="button" id="playerCloseBtn" class="close-player-btn" title="סגור נגן">&times;</button>
       </div>
     </div>

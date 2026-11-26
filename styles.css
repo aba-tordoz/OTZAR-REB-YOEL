@@ -1291,6 +1291,102 @@ html[data-theme="dark"] .modal-pl-btn.active { color: #09111E; }
   .player-inner { grid-template-columns: 1fr; gap: 6px; }
 }
 
+/* Source Badges, Audio Error Recovery & Clean Light Drive Audio Sheet */
+.badge-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.badge-link:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+.player-error-banner {
+  background: #FEF3C7;
+  color: #92400E;
+  border-bottom: 1px solid #F59E0B;
+  padding: 7px 14px;
+  margin-bottom: 6px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+html[data-theme="dark"] .player-error-banner {
+  background: rgba(245, 158, 11, 0.16);
+  color: #FDE68A;
+  border-color: rgba(245, 158, 11, 0.45);
+}
+.player-error-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.modal-body.is-light {
+  background: var(--bg-surface);
+  color: var(--text-main);
+  padding: 20px;
+}
+.drive-audio-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.drive-sheet-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.drive-sheet-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  border: 1px solid rgba(30, 58, 138, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+.drive-sheet-title {
+  margin: 0 0 4px;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  color: var(--primary);
+}
+.drive-sheet-desc {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.drive-sheet-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.drive-sheet-actions a {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+}
+.drive-embed-toggle-row {
+  padding-top: 6px;
+  border-top: 1px dashed var(--border);
+}
+.drive-embed-slot { margin-top: 4px; }
+.modal-body .drive-embed-frame {
+  width: 100%;
+  height: 220px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: #fff;
+}
+
 @media (max-width: 768px) {
   .container { padding: 0 12px; }
   .site-header { position: static; backdrop-filter: none; }
@@ -1333,12 +1429,17 @@ html[data-theme="dark"] .modal-pl-btn.active { color: #09111E; }
   #playerBack30Btn, #playerFwd30Btn, .autoplay-toggle { display: none; }
   .player-timeline { grid-area: timeline; width: 100%; }
   .player-extras { grid-area: extras; gap: 4px; border-top: none; padding-top: 0; width: auto; }
+  .player-extras .pill-small-btn { padding: 4px 7px; font-size: 0.74rem; white-space: nowrap; }
 
   /* Clean Full-Width Mobile Modal */
   .modal-overlay { padding: 8px; backdrop-filter: none; }
   .modal-dialog { border-radius: var(--radius-md); }
   .modal-header { padding: 10px 12px; flex-wrap: wrap; }
   .modal-body { padding: 8px 10px; flex-shrink: 0; }
+  .modal-body.is-light { padding: 14px 12px; }
   .modal-body iframe, .modal-body video { height: 240px; }
+  .modal-body .drive-embed-frame { height: 170px; }
+  .drive-sheet-actions a { width: 100%; }
+  .player-error-banner { font-size: 0.78rem; padding: 6px 10px; }
   .modal-playlist { max-height: 220px; padding: 10px 12px; flex-shrink: 0; }
 }

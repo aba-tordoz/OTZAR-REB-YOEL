@@ -278,6 +278,11 @@
 
     // Modal
     mediaModal: $("mediaModal"),
+    playerSourceLink: $("playerSourceLink"),
+    playerErrorBanner: $("playerErrorBanner"),
+    playerErrorMsg: $("playerErrorMsg"),
+    playerErrorSourceLink: $("playerErrorSourceLink"),
+    playerErrorDownloadLink: $("playerErrorDownloadLink"),
     modalPills: $("modalPills"),
     modalTitle: $("modalTitle"),
     modalExternalBtn: $("modalExternalBtn"),
@@ -317,6 +322,25 @@
   }
   function getDirectDownloadUrl(it) {
     return it.au || it.dl || (it.vi && !it.vi.startsWith("yt:") ? it.vi : "") || it.pd || it.pg || "";
+  }
+  function getSourceUrl(it) {
+    return (it && (it.pg || SOURCES[it.src]?.url || getDirectDownloadUrl(it))) || "";
+  }
+  function showAudioError(it, customMsg = "") {
+    if (!it || !el.playerErrorBanner) return;
+    const srcName = SOURCES[it.src]?.name || it.src || "המקור";
+    const srcUrl = getSourceUrl(it);
+    const dlUrl = getDirectDownloadUrl(it);
+    el.playerErrorMsg.textContent = customMsg || `⚠️ הדפדפן לא הצליח לטעון את השמע ישירות מ-${srcName}. ניתן לנגן בדף המקור או להוריד:`;
+    if (el.playerErrorSourceLink) {
+      el.playerErrorSourceLink.href = srcUrl || "#";
+      el.playerErrorSourceLink.classList.toggle("hidden", !srcUrl);
+    }
+    if (el.playerErrorDownloadLink) {
+      el.playerErrorDownloadLink.href = dlUrl || "#";
+      el.playerErrorDownloadLink.classList.toggle("hidden", !dlUrl);
+    }
+    el.playerErrorBanner.classList.remove("hidden");
   }
   function buildTracksSeriesGroups(items) {
     const map = new Map();
@@ -846,6 +870,7 @@
       const hasDr = tracks.some((t) => !!t.dr);
       const hasVi = tracks.some((t) => !!t.vi);
       const srcName = SOURCES[f.src]?.name || f.src;
+      const cardSrcUrl = getSourceUrl(f);
       const yrBadge = f.y?.length ? `<span class="badge badge-year">${escHtml(f.y[0])}</span>` : "";
 
       // Action button for playing entire series cleanly
@@ -871,7 +896,9 @@
                 ${getLangBadges(f)}
                 ${yrBadge}
                 ${!isMulti && f.ser && f.ser !== (SOURCES[f.src]?.name) && f.ser !== seriesTitle ? `<span class="badge badge-series">${escHtml(f.ser)}</span>` : ""}
-                <span class="badge ${f.src === "gdrive" ? "badge-gdrive" : ""}">${escHtml(srcName)}</span>
+                ${cardSrcUrl
+                  ? `<a class="badge badge-link ${f.src === "gdrive" ? "badge-gdrive" : ""}" href="${escHtml(cardSrcUrl)}" target="_blank" rel="noopener" title="עבור לדף המקור של השיעור">🔗 מקור: ${escHtml(srcName)} ↗</a>`
+                  : `<span class="badge ${f.src === "gdrive" ? "badge-gdrive" : ""}">${escHtml(srcName)}</span>`}
                 ${totalDur > 0 ? `<span class="badge">⏱️ ${formatTime(totalDur)}</span>` : ""}
               </div>
             </div>
@@ -891,15 +918,17 @@
     const isPlaying = state.currentTrackId === it.id;
     const isSaved = state.bookmarks.has(it.id);
     const dlUrl = getDirectDownloadUrl(it);
+    const srcUrl = getSourceUrl(it);
     const prog = state.progress[it.id];
     const resumeHint = prog && prog.t > 15 && (!prog.d || prog.t < prog.d - 20) ? `המשך מ-${formatTime(prog.t)}` : "";
 
     const btns = [];
     if (it.au) btns.push(`<button type="button" class="play-chip-btn" data-action="play-audio" data-id="${escHtml(it.id)}" data-gid="${escHtml(gid || it.gid)}">▶ האזן</button>`);
-    if (it.dr) btns.push(`<button type="button" class="play-chip-btn" data-action="play-drive" data-id="${escHtml(it.id)}" data-gid="${escHtml(gid || it.gid)}">▶ פתח (Drive)</button>`);
+    if (it.dr) btns.push(`<button type="button" class="play-chip-btn" data-action="play-drive" data-id="${escHtml(it.id)}" data-gid="${escHtml(gid || it.gid)}">☁️ האזן (Drive)</button>`);
     if (it.vi) btns.push(`<button type="button" class="play-chip-btn gold" data-action="play-video" data-id="${escHtml(it.id)}" data-gid="${escHtml(gid || it.gid)}">🎬 וידאו</button>`);
     if (it.pd) btns.push(`<button type="button" class="play-chip-btn" data-action="open-pdf" data-id="${escHtml(it.id)}">📄 PDF / מסמך</button>`);
-    if (dlUrl) btns.push(`<a class="btn-ghost btn-sm" href="${escHtml(dlUrl)}" target="_blank" rel="noopener" title="פתח / הורד מהמקור">⬇</a>`);
+    if (srcUrl) btns.push(`<a class="btn-ghost btn-sm" href="${escHtml(srcUrl)}" target="_blank" rel="noopener" title="פתח דף מקור השיעור">🔗 מקור ↗</a>`);
+    if (dlUrl) btns.push(`<a class="btn-ghost btn-sm" href="${escHtml(dlUrl)}" target="_blank" rel="noopener" title="פתח / הורד קובץ">⬇</a>`);
     btns.push(`<button type="button" class="bookmark-btn ${isSaved ? "saved" : ""}" data-action="bookmark" data-id="${escHtml(it.id)}" title="שמור בסימניות">${isSaved ? "🔖" : "☆"}</button>`);
 
     return `
@@ -928,12 +957,14 @@
     container.innerHTML = items.map((it) => {
       const isSaved = state.bookmarks.has(it.id);
       const dlUrl = getDirectDownloadUrl(it);
+      const srcUrl = getSourceUrl(it);
       const srcName = SOURCES[it.src]?.name || it.src;
       const btns = [];
       if (it.au) btns.push(`<button type="button" class="play-chip-btn" data-action="play-audio" data-id="${escHtml(it.id)}">▶ האזן</button>`);
-      if (it.dr) btns.push(`<button type="button" class="play-chip-btn" data-action="play-drive" data-id="${escHtml(it.id)}">▶ נגן (Drive)</button>`);
+      if (it.dr) btns.push(`<button type="button" class="play-chip-btn" data-action="play-drive" data-id="${escHtml(it.id)}">☁️ האזן (Drive)</button>`);
       if (it.vi) btns.push(`<button type="button" class="play-chip-btn gold" data-action="play-video" data-id="${escHtml(it.id)}">🎬 וידאו</button>`);
       if (it.pd) btns.push(`<button type="button" class="play-chip-btn" data-action="open-pdf" data-id="${escHtml(it.id)}">📄 פתח</button>`);
+      if (srcUrl) btns.push(`<a class="btn-ghost btn-sm" href="${escHtml(srcUrl)}" target="_blank" rel="noopener">🔗 מקור ↗</a>`);
       if (dlUrl) btns.push(`<a class="btn-ghost btn-sm" href="${escHtml(dlUrl)}" target="_blank" rel="noopener">⬇ הורד</a>`);
 
       return `
@@ -946,7 +977,9 @@
             <p class="flat-card-sub">${escHtml([it.r, it.b, it.v, it.sec].filter(Boolean).join(" › "))}</p>
             <div class="series-badges" style="margin-top:8px;">
               ${getFormatBadges(it)} ${getLangBadges(it)}
-              <span class="badge">${escHtml(srcName)}</span>
+              ${srcUrl
+                ? `<a class="badge badge-link ${it.src === "gdrive" ? "badge-gdrive" : ""}" href="${escHtml(srcUrl)}" target="_blank" rel="noopener">🔗 ${escHtml(srcName)} ↗</a>`
+                : `<span class="badge">${escHtml(srcName)}</span>`}
             </div>
           </div>
           <div class="track-actions">${btns.join("")}</div>
@@ -1267,22 +1300,49 @@
 
     el.audioPlayerBar.classList.remove("hidden");
     document.body.classList.add("has-player");
+    el.playerErrorBanner?.classList.add("hidden");
     el.playerSeferBadge.textContent = it.b || it.cat;
     el.playerTitle.textContent = it.t;
     const qNote = tracks.length > 1 ? ` • שיעור ${idx + 1} מתוך ${tracks.length} בסדרה${seriesLabel ? ` (${seriesLabel})` : ""}` : "";
     el.playerSub.textContent = (SOURCES[it.src]?.name || it.src) + qNote;
-    el.playerDownloadLink.href = it.au;
+    const srcUrl = getSourceUrl(it);
+    const dlUrl = getDirectDownloadUrl(it);
+    if (el.playerSourceLink) {
+      el.playerSourceLink.href = srcUrl || "#";
+      el.playerSourceLink.classList.toggle("hidden", !srcUrl);
+    }
+    el.playerDownloadLink.href = dlUrl || "#";
+    el.playerDownloadLink.classList.toggle("hidden", !dlUrl);
 
+    el.playerSeek.value = 0;
+    el.playerCurrentTime.textContent = "00:00";
+    el.playerDuration.textContent = formatTime(it.d);
     el.nativeAudio.src = it.au;
     el.nativeAudio.playbackRate = state.speeds[state.speedIdx];
     const saved = state.progress[it.id];
     const startAt = saved && saved.t > 12 && (!saved.d || saved.t < saved.d - 20) ? saved.t : 0;
     el.nativeAudio.onloadedmetadata = () => {
-      if (startAt && startAt < el.nativeAudio.duration - 10) el.nativeAudio.currentTime = startAt;
+      try {
+        if (startAt && el.nativeAudio.duration && startAt < el.nativeAudio.duration - 10) {
+          el.nativeAudio.currentTime = startAt;
+        }
+      } catch {}
       el.playerDuration.textContent = formatTime(el.nativeAudio.duration || it.d);
     };
-    el.nativeAudio.play().catch(() => {});
-    el.playerPlayPauseBtn.textContent = "⏸";
+    el.playerPlayPauseBtn.textContent = "⏳";
+    const playPromise = el.nativeAudio.play();
+    if (playPromise && typeof playPromise.then === "function") {
+      playPromise.then(() => {
+        el.playerErrorBanner?.classList.add("hidden");
+        if (!el.nativeAudio.paused) el.playerPlayPauseBtn.textContent = "⏸";
+      }).catch((err) => {
+        if (err && err.name === "AbortError") return;
+        el.playerPlayPauseBtn.textContent = "▶";
+        if (el.nativeAudio.error || (err && err.name === "NotSupportedError")) {
+          showAudioError(it);
+        }
+      });
+    }
     pushHistory(it.id);
 
     // Highlight active track in DOM without full re-render flicker
@@ -1293,7 +1353,7 @@
   function bindAudioEvents() {
     el.nativeAudio.addEventListener("timeupdate", () => {
       const cur = el.nativeAudio.currentTime || 0;
-      const dur = el.nativeAudio.duration || 0;
+      const dur = isFinite(el.nativeAudio.duration) ? el.nativeAudio.duration : 0;
       el.playerCurrentTime.textContent = formatTime(cur);
       el.playerDuration.textContent = formatTime(dur);
       el.playerSeek.value = dur > 0 ? (cur / dur) * 100 : 0;
@@ -1301,6 +1361,22 @@
         state.progress[state.currentTrackId] = { t: Math.floor(cur), d: Math.floor(dur) };
         saveJSON(LS_KEYS.progress, state.progress);
       }
+    });
+    el.nativeAudio.addEventListener("playing", () => {
+      el.playerErrorBanner?.classList.add("hidden");
+      el.playerPlayPauseBtn.textContent = "⏸";
+    });
+    el.nativeAudio.addEventListener("pause", () => {
+      el.playerPlayPauseBtn.textContent = "▶";
+    });
+    el.nativeAudio.addEventListener("waiting", () => {
+      if (!el.nativeAudio.paused) el.playerPlayPauseBtn.textContent = "⏳";
+    });
+    el.nativeAudio.addEventListener("error", () => {
+      if (!el.nativeAudio.getAttribute("src")) return;
+      el.playerPlayPauseBtn.textContent = "▶";
+      const curItem = state.queue[state.queueIndex];
+      if (curItem) showAudioError(curItem);
     });
     el.nativeAudio.addEventListener("ended", () => {
       if (el.playerAutoNext.checked && state.queueIndex + 1 < state.queue.length) {
@@ -1310,8 +1386,28 @@
       }
     });
     el.playerPlayPauseBtn.addEventListener("click", () => {
-      if (el.nativeAudio.paused) { el.nativeAudio.play().catch(() => {}); el.playerPlayPauseBtn.textContent = "⏸"; }
-      else { el.nativeAudio.pause(); el.playerPlayPauseBtn.textContent = "▶"; }
+      if (el.nativeAudio.paused) {
+        el.playerErrorBanner?.classList.add("hidden");
+        if (el.nativeAudio.error) {
+          el.nativeAudio.load();
+        }
+        el.playerPlayPauseBtn.textContent = "⏳";
+        const p = el.nativeAudio.play();
+        if (p && typeof p.then === "function") {
+          p.then(() => {
+            el.playerErrorBanner?.classList.add("hidden");
+            if (!el.nativeAudio.paused) el.playerPlayPauseBtn.textContent = "⏸";
+          }).catch((err) => {
+            if (err && err.name === "AbortError") return;
+            el.playerPlayPauseBtn.textContent = "▶";
+            const curItem = state.queue[state.queueIndex];
+            if (curItem && (el.nativeAudio.error || err?.name === "NotSupportedError")) showAudioError(curItem);
+          });
+        }
+      } else {
+        el.nativeAudio.pause();
+        el.playerPlayPauseBtn.textContent = "▶";
+      }
     });
     el.playerNextBtn.addEventListener("click", () => {
       if (state.queueIndex + 1 < state.queue.length) startAudioQueue(state.queue, state.queueIndex + 1, state.queueSeriesName);
@@ -1319,10 +1415,16 @@
     el.playerPrevBtn.addEventListener("click", () => {
       if (state.queueIndex > 0) startAudioQueue(state.queue, state.queueIndex - 1, state.queueSeriesName);
     });
-    el.playerBack30Btn.addEventListener("click", () => { el.nativeAudio.currentTime = Math.max(0, (el.nativeAudio.currentTime || 0) - 15); });
-    el.playerFwd30Btn.addEventListener("click", () => { el.nativeAudio.currentTime = (el.nativeAudio.currentTime || 0) + 30; });
+    el.playerBack30Btn.addEventListener("click", () => {
+      try { el.nativeAudio.currentTime = Math.max(0, (el.nativeAudio.currentTime || 0) - 15); } catch {}
+    });
+    el.playerFwd30Btn.addEventListener("click", () => {
+      try { el.nativeAudio.currentTime = (el.nativeAudio.currentTime || 0) + 30; } catch {}
+    });
     el.playerSeek.addEventListener("input", () => {
-      if (el.nativeAudio.duration > 0) el.nativeAudio.currentTime = (el.playerSeek.value / 100) * el.nativeAudio.duration;
+      if (isFinite(el.nativeAudio.duration) && el.nativeAudio.duration > 0) {
+        el.nativeAudio.currentTime = (el.playerSeek.value / 100) * el.nativeAudio.duration;
+      }
     });
     el.playerSpeedBtn.addEventListener("click", () => {
       state.speedIdx = (state.speedIdx + 1) % state.speeds.length;
@@ -1332,6 +1434,7 @@
     });
     el.playerCloseBtn.addEventListener("click", () => {
       el.nativeAudio.pause();
+      el.playerErrorBanner?.classList.add("hidden");
       el.audioPlayerBar.classList.add("hidden");
       document.body.classList.remove("has-player");
     });
@@ -1350,8 +1453,11 @@
 
     el.modalTitle.textContent = it.t;
     el.modalPills.innerHTML = `${getLangBadges(it)} <span class="badge">${escHtml(it.b || it.cat)}</span>` + (it.y?.[0] ? `<span class="badge badge-year">${escHtml(it.y[0])}</span>` : "");
+    el.modalBody.classList.toggle("is-light", mode === "drive" || mode === "pdf");
 
-    let extUrl = it.pg || "";
+    const srcUrl = getSourceUrl(it);
+    const dlUrl = getDirectDownloadUrl(it);
+    let extUrl = srcUrl || "";
     if (mode === "video") {
       if (it.vi && it.vi.startsWith("yt:")) {
         const yid = it.vi.slice(3);
@@ -1371,25 +1477,63 @@
         }
       }
     } else if (mode === "drive") {
-      extUrl = it.dr || it.pg || "";
-      el.modalBody.innerHTML = `<iframe src="${escHtml(it.dr)}" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+      const driveViewUrl = it.dr ? it.dr.replace(/\/preview(\?|$)/, "/view$1") : srcUrl;
+      const sameDriveFile = !!(srcUrl && driveViewUrl && srcUrl.split("?")[0] === driveViewUrl.split("?")[0]);
+      const isWma = (it.sub || "").includes("WMA");
+      extUrl = driveViewUrl || srcUrl || it.dr || "";
+      el.modalBody.innerHTML = `
+        <div class="drive-audio-sheet">
+          <div class="drive-sheet-top">
+            <div class="drive-sheet-icon">☁️</div>
+            <div>
+              <h4 class="drive-sheet-title">שמע מתוך Google Drive</h4>
+              <p class="drive-sheet-desc">
+                ${isWma
+                  ? "קובץ זה הוא בפורמט WMA ישן שאינו מופעל ישירות בדפדפן. ניתן לפתוח אותו ב-Google Drive או להוריד למכשיר."
+                  : "Google חוסמת הטמעה ישירה של קבצי Drive בתוך נגן האודיו של האתר (מדיניות אבטחה של הדפדפן). בלחיצה על הכפתור תיפתח תצוגת הנגן הרשמית של Google Drive או שתוכלו להוריד את הקובץ ישירות:"}
+              </p>
+            </div>
+          </div>
+          <div class="drive-sheet-actions">
+            ${driveViewUrl ? `<a class="btn-primary" href="${escHtml(driveViewUrl)}" target="_blank" rel="noopener">▶ נגן ב-Google Drive (חלון חדש) ↗</a>` : ""}
+            ${dlUrl ? `<a class="btn-outline" href="${escHtml(dlUrl)}" target="_blank" rel="noopener">⬇ הורד קובץ שמע</a>` : ""}
+            ${srcUrl && !sameDriveFile ? `<a class="btn-outline" href="${escHtml(srcUrl)}" target="_blank" rel="noopener">🔗 עמוד המקור ↗</a>` : ""}
+          </div>
+          ${!isWma && it.dr ? `
+            <div class="drive-embed-toggle-row">
+              <button type="button" class="btn-ghost btn-sm" id="loadDriveEmbedBtn">🧩 נסה תצוגה מקדימה מוטמעת של Drive כאן (עשוי לדרוש עוגיות Google)</button>
+            </div>
+            <div id="driveEmbedSlot" class="drive-embed-slot hidden"></div>
+          ` : ""}
+        </div>`;
+      $("loadDriveEmbedBtn")?.addEventListener("click", () => {
+        const slot = $("driveEmbedSlot");
+        const btn = $("loadDriveEmbedBtn");
+        if (!slot) return;
+        slot.classList.remove("hidden");
+        slot.innerHTML = `<iframe class="drive-embed-frame" src="${escHtml(it.dr)}" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+        if (btn) btn.classList.add("hidden");
+      });
     } else if (mode === "pdf") {
-      extUrl = it.pd || it.pg || "";
+      extUrl = it.pd || srcUrl || "";
       if (it.pd && it.pd.includes("hebrewbooks.org")) {
         el.modalBody.innerHTML = `
-          <div style="padding:36px;text-align:center;color:#E2E8F0">
-            <h4 style="margin:0 0 10px;color:#F0C962;">${escHtml(it.t)}</h4>
-            <p>${escHtml(it.sub)}</p>
-            <a class="btn-primary" href="${escHtml(it.pd)}" target="_blank" rel="noopener">📖 פתח וצפה בספר באתר HebrewBooks ↗</a>
+          <div style="padding:28px;text-align:center;">
+            <h4 style="margin:0 0 10px;color:var(--primary);font-family:var(--font-serif);font-size:1.2rem;">${escHtml(it.t)}</h4>
+            <p style="color:var(--text-muted);">${escHtml(it.sub)}</p>
+            <a class="btn-primary" href="${escHtml(it.pd)}" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;">📖 פתח וצפה בספר באתר HebrewBooks ↗</a>
           </div>`;
       } else {
         el.modalBody.innerHTML = `<iframe src="${escHtml(it.pd)}" allowfullscreen></iframe>`;
       }
     }
 
-    el.modalExternalBtn.href = extUrl || "#";
-    const dlUrl = getDirectDownloadUrl(it);
-    el.modalFooter.innerHTML = `<span>מקור: ${escHtml(SOURCES[it.src]?.name || it.src)}</span>` + (dlUrl ? `<a href="${escHtml(dlUrl)}" target="_blank" rel="noopener" class="btn-outline btn-sm">⬇ הורד קובץ מקור ↗</a>` : "");
+    el.modalExternalBtn.textContent = "🔗 פתח במקור ↗";
+    el.modalExternalBtn.href = srcUrl || extUrl || "#";
+    const footerParts = [`<span>מקור: ${escHtml(SOURCES[it.src]?.name || it.src)}</span>`];
+    if (srcUrl) footerParts.push(`<a href="${escHtml(srcUrl)}" target="_blank" rel="noopener" class="btn-outline btn-sm">🔗 עמוד המקור ↗</a>`);
+    if (dlUrl) footerParts.push(`<a href="${escHtml(dlUrl)}" target="_blank" rel="noopener" class="btn-outline btn-sm">⬇ הורד קובץ ↗</a>`);
+    el.modalFooter.innerHTML = footerParts.join(" ");
 
     // Series Playlist Drawer inside Modal if multi-part series!
     const gid = gidOverride || it.gid;
