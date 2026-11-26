@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>אוצר שיעורי ר' יואל | דפדוף מסודר, סדרות שיעורים וארכיון הרב יואל כהן ע"ה</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%231B3B6F'/%3E%3Cpath d='M20 10v20M11 13c3-1.5 6.5-1 9 1 2.5-2 6-2.5 9-1v14c-3-1.5-6.5-1-9 1-2.5-2-6-2.5-9-1V13z' fill='none' stroke='%23FAF6EE' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='20' cy='8' r='2' fill='%23D4A12A'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="top-gold-ribbon" aria-hidden="true"></div>
+
+  <!-- Clean Sticky Header -->
+  <header class="site-header" id="siteHeader">
+    <div class="container header-inner">
+      <div class="brand" id="brandHomeBtn" role="button" tabindex="0" aria-label="חזרה לראשי">
+        <div class="brand-emblem" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none">
+            <rect x="3" y="5" width="34" height="30" rx="6" fill="currentColor" fill-opacity="0.1" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M20 9v22M11 13c3-1.5 6.5-1 9 1 2.5-2 6-2.5 9-1v15c-3-1.5-6.5-1-9 1-2.5-2-6-2.5-9-1V13z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="20" cy="8.5" r="1.5" fill="#C9972C"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">אוצר שיעורי ר' יואל</h1>
+          <p class="brand-sub" id="headerSubStats">הגה"ח רבי יואל כהן ע"ה • טוען ארכיון...</p>
+        </div>
+      </div>
+
+      <div class="header-search-wrap">
+        <div class="search-input-box">
+          <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7.5"/>
+            <path d="M20 20l-4-4" stroke-linecap="round"/>
+          </svg>
+          <input type="search" id="globalSearchInput" placeholder="חפש מאמר, שיחה, פרק, פרשה, שנת תרס״ו / תש״מ... ( / )" autocomplete="off" />
+          <button type="button" id="clearSearchBtn" class="clear-search-btn hidden" title="נקה חיפוש" aria-label="נקה חיפוש">&times;</button>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" id="themeToggleBtn" class="icon-pill-btn" title="החלף מצב תאורה" aria-label="החלף מצב תאורה">
+          <span class="theme-icon-sun" aria-hidden="true">☀️</span>
+          <span class="theme-icon-moon hidden" aria-hidden="true">🌙</span>
+          <span class="theme-label">מצב לילה</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Primary Clean Nav Tabs -->
+    <nav class="main-nav" aria-label="ניווט ראשי">
+      <div class="container nav-tabs-row">
+        <button type="button" class="nav-tab active" data-view="browse">
+          <span class="tab-icon">📚</span>
+          <span>עיון מסודר</span>
+        </button>
+        <button type="button" class="nav-tab" data-view="catalog">
+          <span class="tab-icon">🔍</span>
+          <span>חיפוש וסינון</span>
+          <span class="tab-badge" id="navTotalCount">—</span>
+        </button>
+        <button type="button" class="nav-tab" data-view="seforim">
+          <span class="tab-icon">📖</span>
+          <span>ספרים ו-PDF</span>
+          <span class="tab-badge" id="navPdfCount">—</span>
+        </button>
+        <button type="button" class="nav-tab" data-view="saved">
+          <span class="tab-icon">🔖</span>
+          <span>שמורים</span>
+          <span class="tab-badge" id="navSavedCount">0</span>
+        </button>
+        <button type="button" class="nav-tab" data-view="portals">
+          <span class="tab-icon">🌐</span>
+          <span>מאגרים</span>
+        </button>
+        <button type="button" class="nav-tab" data-view="submitArchive">
+          <span class="tab-icon">➕</span>
+          <span>שליחת מאגר</span>
+        </button>
+        <button type="button" class="nav-tab" data-view="feedback">
+          <span class="tab-icon">💬</span>
+          <span>שליחת פידבק</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container main-content">
+    <!-- Resume Banner (only when user has listening history) -->
+    <div id="resumeBanner" class="resume-banner hidden"></div>
+
+    <!-- VIEW 1: CLEAN CHASSIDUS-APP STYLE STEPPED LIBRARY BROWSER -->
+    <section id="viewBrowse" class="view-section active">
+      <!-- Quiet Single-Bar Language / Format Filter -->
+      <div class="browse-topbar">
+        <div class="browse-filters-strip">
+          <div class="filter-pill-row" id="browseLangPills" aria-label="סינון לפי שפה">
+            <span class="strip-label">שפה:</span>
+            <button type="button" class="mini-pill active" data-blang="all">כל השפות</button>
+            <button type="button" class="mini-pill" data-blang="yi">אידיש</button>
+            <button type="button" class="mini-pill" data-blang="he">עברית / לשו"ק</button>
+            <button type="button" class="mini-pill" data-blang="en">אנגלית</button>
+          </div>
+          <div class="filter-pill-row" id="browseFmtPills" aria-label="סינון לפי סוג מדיה">
+            <span class="strip-label">סוג:</span>
+            <button type="button" class="mini-pill active" data-bfmt="all">הכל</button>
+            <button type="button" class="mini-pill" data-bfmt="audio">שמע</button>
+            <button type="button" class="mini-pill" data-bfmt="video">וידאו</button>
+            <button type="button" class="mini-pill" data-bfmt="pdf">PDF / כתבים</button>
+          </div>
+        </div>
+        <button type="button" id="browseOpenInCatalogBtn" class="btn-outline btn-sm hidden">פתח תצוגה זו בסינון מתקדם</button>
+      </div>
+
+      <!-- Breadcrumb Navigation Bar -->
+      <div class="breadcrumb-card" id="breadcrumbBar">
+        <div class="breadcrumb-trail" id="browseBreadcrumbs"></div>
+        <button type="button" id="browseBackBtn" class="btn-back hidden">→ חזרה שלב אחורה</button>
+      </div>
+
+      <!-- Step Heading & Optional Sub-controls (e.g., Tanya Perek vs Full Cycle switch / Quick Filter inside long list) -->
+      <div class="step-head-row" id="browseStepHeader">
+        <div>
+          <span class="step-kicker" id="browseStepKicker">שלב 1</span>
+          <h2 class="step-title" id="browseStepTitle">בחר מדור לימוד</h2>
+          <p class="step-subtitle" id="browseStepSub">בחר קטגוריה וצעד אחר צעד עד לסדרת השיעורים</p>
+        </div>
+        <div class="step-tools-wrap">
+          <div id="browseStepTools" class="step-tools"></div>
+          <input type="search" class="stage-filter-input hidden" id="stageFilterInput" placeholder="סנן ברשימה זו..." autocomplete="off" />
+        </div>
+      </div>
+
+      <!-- Stage Content: either Step Selection Cards OR Grouped Series Display -->
+      <div id="browseStageContent"></div>
+    </section>
+
+    <!-- VIEW 2: UNIFIED SEARCH & FACETED CATALOG (Grouped by Series or Flat) -->
+    <section id="viewCatalog" class="view-section hidden">
+      <div class="catalog-layout">
+        <div class="mobile-filter-bar">
+          <button type="button" id="mobileFilterToggleBtn" class="btn-outline">🎛️ סינון לפי שפה, רבי, ספר ושנה</button>
+          <span id="mobileResultsCount" class="results-count-label"></span>
+        </div>
+
+        <aside class="filters-sidebar" id="filtersSidebar">
+          <div class="sidebar-header">
+            <h3>סינון ומיקוד</h3>
+            <button type="button" id="clearAllFiltersBtn" class="text-link-btn">נקה הכל</button>
+            <button type="button" id="closeMobileFilterBtn" class="close-drawer-btn" aria-label="סגור">&times;</button>
+          </div>
+
+          <div class="filter-group">
+            <h4 class="filter-title">שפה</h4>
+            <div id="filterLangList" class="filter-options"></div>
+          </div>
+
+          <div class="filter-group">
+            <h4 class="filter-title">סוג מדיה</h4>
+            <div id="filterFormatList" class="filter-options"></div>
+          </div>
+
+          <div class="filter-group">
+            <h4 class="filter-title">מדור ראשי</h4>
+            <div id="filterCatList" class="filter-options"></div>
+          </div>
+
+          <div class="filter-group" id="filterRebbeGroup">
+            <h4 class="filter-title">רבי</h4>
+            <div id="filterRebbeList" class="filter-options"></div>
+          </div>
+
+          <div class="filter-group">
+            <h4 class="filter-title">ספר / קטגוריה</h4>
+            <div id="filterBookList" class="filter-options scrollable-options"></div>
+          </div>
+
+          <div class="filter-group hidden" id="filterVolGroup">
+            <h4 class="filter-title" id="filterVolTitle">חלק / פרק</h4>
+            <div id="filterVolList" class="filter-options scrollable-options"></div>
+          </div>
+
+          <div class="filter-group hidden" id="filterSecGroup">
+            <h4 class="filter-title" id="filterSecTitle">שיחה / מאמר</h4>
+            <div id="filterSecList" class="filter-options scrollable-options"></div>
+          </div>
+
+          <div class="filter-group">
+            <h4 class="filter-title">תקופה ושנה</h4>
+            <div class="year-mode-tabs">
+              <button type="button" class="ym-btn active" data-ym="decades">לפי תקופות</button>
+              <button type="button" class="ym-btn" data-ym="years">שנה מדויקת</button>
+            </div>
+            <div id="filterYearList" class="filter-options scrollable-options"></div>
+          </div>
+
+          <div class="filter-group">
+            <h4 class="filter-title">פרשת השבוע / מועד</h4>
+            <div id="filterParshaList" class="filter-options scrollable-options"></div>
+          </div>
+
+          <div class="filter-group">
+            <h4 class="filter-title">מקור בארכיון</h4>
+            <div id="filterSourceList" class="filter-options scrollable-options"></div>
+          </div>
+
+          <div class="sidebar-mobile-footer">
+            <button type="button" id="mobileDrawerDoneBtn" class="btn-primary">הצג תוצאות ✓</button>
+          </div>
+        </aside>
+
+        <div class="results-column">
+          <div id="activeChipsBar" class="active-chips-bar hidden"></div>
+
+          <div class="results-toolbar">
+            <div class="results-summary" id="resultsSummary">טוען שיעורים...</div>
+            <div class="toolbar-controls">
+              <div class="view-mode-switch" role="group" aria-label="תצוגת תוצאות">
+                <button type="button" class="vm-btn active" data-mode="series">📦 מקובץ לפי סדרות</button>
+                <button type="button" class="vm-btn" data-mode="flat">🎵 רשימת שיעורים</button>
+              </div>
+              <div class="sort-wrap">
+                <label for="sortSelect">מיון:</label>
+                <select id="sortSelect">
+                  <option value="default">סדר מקורי / סדרה</option>
+                  <option value="year_asc">שנה (מוקדם למאוחר)</option>
+                  <option value="year_desc">שנה (מאוחר למוקדם)</option>
+                  <option value="title_asc">לפי א'-ב'</option>
+                  <option value="dur_desc">ארוכים תחילה</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div id="resultsList" class="results-flow"></div>
+          <div id="emptyState" class="empty-state hidden">
+            <div class="empty-icon">🔍</div>
+            <h3>לא נמצאו שיעורים התואמים את הסינון</h3>
+            <p>נסה לבחור "כל השפות", לנקות חלק מהמסננים או לחפש מילה כללית יותר.</p>
+            <button type="button" id="emptyResetBtn" class="btn-primary">הצג את כל השיעורים</button>
+          </div>
+          <div id="paginationBar" class="pagination-bar"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: SEFORIM & PDF STUDY MATERIALS -->
+    <section id="viewSeforim" class="view-section hidden">
+      <div class="section-header-row">
+        <div>
+          <h2 class="section-title">ספרי ר' יואל, חוברות לימוד ודפי מקורות (PDF)</h2>
+          <p class="section-subtitle">ספרים מודפסים בהיברובוקס, דפי מאמרים מלוקט, חוברות Chassidus Perspective ורישומי חזרות</p>
+        </div>
+        <div class="shelf-filter-pills" id="pdfLangFilterPills">
+          <button type="button" class="pill-filter active" data-pdflang="all">כל השפות</button>
+          <button type="button" class="pill-filter" data-pdflang="he">עברית / לשון הקודש</button>
+          <button type="button" class="pill-filter" data-pdflang="en">אנגלית (חוברות לימוד)</button>
+        </div>
+      </div>
+      <div id="seforimPdfGrid" class="results-flat-grid"></div>
+    </section>
+
+    <!-- VIEW 4: SAVED & HISTORY -->
+    <section id="viewSaved" class="view-section hidden">
+      <div class="section-header-row">
+        <div>
+          <h2 class="section-title">שיעורים שמורים והמשך לימוד</h2>
+          <p class="section-subtitle">הסימניות והיסטוריית ההאזנה נשמרות בדפדפן באופן מקומי</p>
+        </div>
+        <button type="button" id="clearHistoryBtn" class="btn-ghost">נקה היסטוריה</button>
+      </div>
+      <div class="saved-split">
+        <div>
+          <h3 class="sub-heading">🔖 סימניות שמורות</h3>
+          <div id="bookmarksList" class="results-flat-grid"></div>
+        </div>
+        <div>
+          <h3 class="sub-heading">🕒 האזנת לאחרונה</h3>
+          <div id="historyList" class="results-flat-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: EXTERNAL PORTALS HUB -->
+    <section id="viewPortals" class="view-section hidden">
+      <div class="section-header-row">
+        <div>
+          <h2 class="section-title">שער המאגרים המשלימים ברשת</h2>
+          <p class="section-subtitle">אוספים ואתרים חיצוניים של שיעורי הגה"ח ר' יואל כהן ע"ה (ללא אחסון מקומי)</p>
+        </div>
+      </div>
+      <div class="portals-grid">
+        <a class="portal-card" href="https://drive.google.com/drive/folders/0B7BtXyKG9O_rQmdKOUd2U0owYk0?resourcekey=0-EZQ3wdHgQEgeD14j3cKLUQ&usp=drive_link" target="_blank" rel="noopener">
+          <div class="portal-badge">אוסף Drive מקיף • מוטמע במלואו באתר</div>
+          <h3>Google Drive — אוסף שיעורי ר' יואל כהן</h3>
+          <p>4,495 קבצי שמע, חזרות תש"מ–תשמ"ח, תניא עברית, ס"ו וע"ב, סה"מ מלוקט וכתבים — מוזרמים ישירות מכאן.</p>
+          <span class="portal-cta">פתח תיקיית Drive &larr;</span>
+        </a>
+        <a class="portal-card" href="https://chassidus.com/rebyoel/" target="_blank" rel="noopener">
+          <div class="portal-badge">3,661 שיעורים • מוטמע במלואו באתר</div>
+          <h3>Chassidus App (היכל מנחם)</h3>
+          <p>אוסף היכל מנחם באידיש (תניא, תו"א, לקו"ת, ס"ו, ע"ב, מלוקט, לקו"ש, דרך מצותיך) — מסודר כאן לפי סדרות.</p>
+          <span class="portal-cta">עבור לאתר היכל מנחם &larr;</span>
+        </a>
+        <a class="portal-card" href="https://www.kolhalashon.com/he/regularSite/ravs/2476" target="_blank" rel="noopener">
+          <div class="portal-badge">964+ שיעורים • אידיש ועברית</div>
+          <h3>קול הלשון — הרב יואל כהן (#2476)</h3>
+          <p>שיעורי תניא בעברית ובאידיש, מאמרי רבותינו נשיאינו, גאולה ומשיח ושיחות באתר קול הלשון.</p>
+          <span class="portal-cta">פתח בקול הלשון &larr;</span>
+        </a>
+        <a class="portal-card" href="https://otzerhachassidus.com/%D7%9E%D7%92%D7%99%D7%93%D7%A9%D7%99%D7%A2%D7%95%D7%A8/%D7%94%D7%A8%D7%91-%D7%99%D7%95%D7%90%D7%9C-%D7%9B%D7%94%D7%9F/" target="_blank" rel="noopener">
+          <div class="portal-badge">אוצר החסידות</div>
+          <h3>אוצר החסידות — הרב יואל כהן</h3>
+          <p>שיעורים לפי ספר ושפה + דפי מקורות PDF להורדה (חלק מהמאגר כבר מוטמע בחיפוש כאן).</p>
+          <span class="portal-cta">פתח באוצר החסידות &larr;</span>
+        </a>
+        <a class="portal-card" href="https://www.chabad.org/search/keyword_cdo/kid/16930/jewish/Yoel-Kahn.htm" target="_blank" rel="noopener">
+          <div class="portal-badge">שמע, וידאו ומאמרים • אנגלית ועברית</div>
+          <h3>Chabad.org — Rabbi Yoel Kahn</h3>
+          <p>הקלטות חזרה היסטוריות, מאמרים וכתבות באתר חב"ד העולמי.</p>
+          <span class="portal-cta">פתח ב-Chabad.org &larr;</span>
+        </a>
+        <a class="portal-card" href="https://hebrewbooks.org/54885" target="_blank" rel="noopener">
+          <div class="portal-badge">ספרי ר' יואל ב-PDF</div>
+          <h3>HebrewBooks — שער היחוד והאמונה וספר הערכים</h3>
+          <p>גישה ישירה לספרי הרב יואל כהן המודפסים באוצר HebrewBooks.</p>
+          <span class="portal-cta">פתח ב-HebrewBooks &larr;</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- VIEW 6: SUBMIT ARCHIVE / DRIVE / EXTERNAL REPOSITORY -->
+    <section id="viewSubmitArchive" class="view-section hidden">
+      <div class="section-header-row">
+        <div>
+          <h2 class="section-title">שליחת מאגר שיעורים חדש להוספה</h2>
+          <p class="section-subtitle">האתר מזרים שיעורים ישירות ממקורות חיצוניים (כי העלאת קבצים לשרת מקומי אינה אפשרית כעת). שלח קישור לתיקיית Google Drive, ערוץ או אתר קיים ונחבר אותם לקטלוג!</p>
+        </div>
+      </div>
+
+      <div class="community-layout">
+        <form id="submitArchiveForm" class="community-form-card" novalidate>
+          <div class="form-info-callout">
+            <strong>💡 כיצד לשתף הקלטות או קבצים שלך?</strong>
+            <span>העלה את הקבצים לחשבון Google Drive / YouTube / Dropbox / אתר משלך (האחסון שלך חינמי!), הפוך את התיקייה לציבורית ("כל מי שקיבל קישור") והדבק כאן את הקישור המלא.</span>
+          </div>
+
+          <div class="form-field">
+            <label for="archType">סוג המאגר / הפלטפורמה</label>
+            <select id="archType">
+              <option value="תיקיית Google Drive">תיקיית Google Drive</option>
+              <option value="ערוץ / פלייליסט YouTube">ערוץ / פלייליסט YouTube</option>
+              <option value="פודקאסט (RSS / Spotify / Apple)">פודקאסט (RSS)</option>
+              <option value="ספרים / חוברות PDF סרוקות">ספרים / חוברות PDF סרוקות</option>
+              <option value="אתר / אודיו-בוקס / אחר">אתר / מקור אחר</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="archUrl">קישור מלא למאגר (URL) <span class="req-star">*</span></label>
+            <input type="url" id="archUrl" required placeholder="https://drive.google.com/drive/folders/..." dir="ltr" />
+            <div id="archUrlHint" class="field-hint hidden"></div>
+          </div>
+
+          <div class="form-field">
+            <label for="archTitle">שם המאגר / תיאור קצר <span class="req-star">*</span></label>
+            <input type="text" id="archTitle" required placeholder='לדוגמה: הקלטות חזרה נדירות מתש"ל–תש"מ / שיעורי תניא בעברית...' />
+          </div>
+
+          <div class="form-field">
+            <label>אילו ספרים / שפות נמצאים במאגר? (לחץ לסימון)</label>
+            <div class="tag-pick-row" id="archTagsRow">
+              <button type="button" class="mini-pill" data-arch-tag="תניא">תניא</button>
+              <button type="button" class="mini-pill" data-arch-tag="ליקוטי שיחות">ליקוטי שיחות</button>
+              <button type="button" class="mini-pill" data-arch-tag="ספר המאמרים מלוקט">סה"מ מלוקט</button>
+              <button type="button" class="mini-pill" data-arch-tag="המשך תרס&quot;ו / ע&quot;ב">תרס"ו / ע"ב</button>
+              <button type="button" class="mini-pill" data-arch-tag="חזרות">חזרות</button>
+              <button type="button" class="mini-pill" data-arch-tag="התוועדויות">התוועדויות</button>
+              <button type="button" class="mini-pill" data-arch-tag="עברית">עברית</button>
+              <button type="button" class="mini-pill" data-arch-tag="אידיש">אידיש</button>
+              <button type="button" class="mini-pill" data-arch-tag="אנגלית">אנגלית</button>
+              <button type="button" class="mini-pill" data-arch-tag="וידאו / PDF">וידאו / PDF</button>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="archNotes">הערות, תאריכים או פרטי מבנה התיקיות (אופציונלי)</label>
+            <textarea id="archNotes" rows="3" placeholder="פירוט חלקים, מספרי סדרות, או איפה נמצאים קישורי השמע..."></textarea>
+          </div>
+
+          <div class="form-field">
+            <label for="archContact">אימייל או שם ליצירת קשר (אופציונלי)</label>
+            <input type="text" id="archContact" placeholder="למקרה שנצטרך לבקש הרשאת צפייה או הבהרה" />
+          </div>
+
+          <div class="form-actions-row">
+            <button type="submit" class="btn-primary">➕ הכן ושלח מאגר להוספה</button>
+            <span id="archFormStatus" class="form-status-msg hidden"></span>
+          </div>
+          <div id="archDispatchBox" class="dispatch-box hidden"></div>
+        </form>
+
+        <aside class="community-side-card">
+          <div id="archGoogleFormMount" class="hidden" style="margin-bottom:16px;"></div>
+          <h3>📋 מאגרים שהכנת ושלחת מהדפדפן</h3>
+          <p class="section-subtitle">תיעוד ההצעות שנשמרו אצלך עם אפשרות שליחה או העתקה מחדש</p>
+          <div id="submittedArchivesList" class="submitted-list"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- VIEW 7: FEEDBACK & ISSUE REPORTING -->
+    <section id="viewFeedback" class="view-section hidden">
+      <div class="section-header-row">
+        <div>
+          <h2 class="section-title">שליחת פידבק, דיווח על תקלות והצעות לשיפור</h2>
+          <p class="section-subtitle">מצאת שיעור שלא מתנגן, מאמר שממוקם תחת ספר לא נכון, או שיש לך רעיון לשפר את האתר? נשמח לשמוע!</p>
+        </div>
+      </div>
+
+      <div class="community-layout">
+        <form id="feedbackForm" class="community-form-card" novalidate>
+          <div class="form-field">
+            <label>נושא הפנייה</label>
+            <div class="tag-pick-row" id="fbTypePills">
+              <button type="button" class="mini-pill active" data-fbtype="🔗 דיווח על קישור שבור / חסר">🔗 קישור שבור / חסר</button>
+              <button type="button" class="mini-pill" data-fbtype="📚 תיקון סיווג ספר / חלק">📚 תיקון סיווג ספר</button>
+              <button type="button" class="mini-pill" data-fbtype="📱 שיפור עיצוב ומגע">📱 שיפור עיצוב ומגע</button>
+              <button type="button" class="mini-pill" data-fbtype="💡 הצעה לתכונה חדשה">💡 רעיון חדש</button>
+              <button type="button" class="mini-pill" data-fbtype="🙏 משוב כללי">🙏 משוב כללי</button>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <div class="label-with-helper">
+              <label for="fbSubject">איזה שיעור / עמוד מדובר? (אופציונלי)</label>
+              <button type="button" id="fbAttachLastBtn" class="btn-outline btn-sm hidden">🎧 קשר לשיעור האחרון ששמעתי</button>
+            </div>
+            <input type="text" id="fbSubject" placeholder="שם השיעור, הסדרה, הספר או האזור באתר" />
+          </div>
+
+          <div class="form-field">
+            <label for="fbMessage">פירוט הפידבק / ההצעה <span class="req-star">*</span></label>
+            <textarea id="fbMessage" rows="4" required placeholder="כתוב כאן כל הערה, תיקון סדר שיעורים או בקשה..."></textarea>
+          </div>
+
+          <div class="form-field">
+            <label for="fbContact">שם או אימייל לחזרה (אופציונלי)</label>
+            <input type="text" id="fbContact" placeholder="שם / כתובת אימייל אם תרצה מענה" />
+          </div>
+
+          <div class="form-actions-row">
+            <button type="submit" class="btn-primary">💬 שלח פידבק</button>
+            <span id="fbFormStatus" class="form-status-msg hidden"></span>
+          </div>
+          <div id="fbDispatchBox" class="dispatch-box hidden"></div>
+        </form>
+
+        <aside class="community-side-card">
+          <div id="fbGoogleFormMount" class="hidden" style="margin-bottom:16px;"></div>
+          <h3>🕊️ פניות פידבק ששלחת</h3>
+          <p class="section-subtitle">נשמר מקומית לתיעוד שלך; ניתן להעתיק או לשלוח ישירות בלחיצה</p>
+          <div id="submittedFeedbackList" class="submitted-list"></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <!-- Persistent Bottom Audio Player Bar -->
+  <div id="audioPlayerBar" class="audio-player-bar hidden" role="region" aria-label="נגן שיעורים רציף">
+    <div class="container player-inner">
+      <div class="player-info">
+        <div class="player-badge" id="playerSeferBadge">שמע</div>
+        <div class="player-titles">
+          <div class="player-title" id="playerTitle">בחר שיעור להאזנה</div>
+          <div class="player-sub" id="playerSub"></div>
+        </div>
+      </div>
+
+      <div class="player-controls-wrap">
+        <div class="player-buttons">
+          <button type="button" id="playerPrevBtn" class="ctrl-btn" title="שיעור קודם בסדרה">⏮</button>
+          <button type="button" id="playerBack30Btn" class="ctrl-btn" title="אחורה 15 שניות">-15</button>
+          <button type="button" id="playerPlayPauseBtn" class="play-main-btn" title="נגן / השהה">▶</button>
+          <button type="button" id="playerFwd30Btn" class="ctrl-btn" title="קדימה 30 שניות">+30</button>
+          <button type="button" id="playerNextBtn" class="ctrl-btn" title="שיעור הבא בסדרה">⏭</button>
+        </div>
+        <div class="player-timeline">
+          <span id="playerCurrentTime">00:00</span>
+          <input type="range" id="playerSeek" min="0" max="100" value="0" step="0.1" aria-label="ציר זמן" />
+          <span id="playerDuration">00:00</span>
+        </div>
+      </div>
+
+      <div class="player-extras">
+        <button type="button" id="playerSpeedBtn" class="pill-small-btn" title="מהירות האזנה">1x</button>
+        <label class="autoplay-toggle" title="מעבר אוטומטי לשיעור הבא בסדרה">
+          <input type="checkbox" id="playerAutoNext" checked />
+          <span>רצף אוטומטי</span>
+        </label>
+        <a id="playerDownloadLink" href="#" target="_blank" rel="noopener" class="pill-small-btn" title="פתח / הורד קובץ מקור">⬇</a>
+        <button type="button" id="playerCloseBtn" class="close-player-btn" title="סגור נגן">&times;</button>
+      </div>
+    </div>
+    <audio id="nativeAudio" preload="metadata"></audio>
+  </div>
+
+  <!-- Media / Drive / Series Modal -->
+  <div id="mediaModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <div class="modal-pills" id="modalPills"></div>
+          <h3 id="modalTitle" class="modal-title"></h3>
+        </div>
+        <div class="modal-head-actions">
+          <a id="modalExternalBtn" href="#" target="_blank" rel="noopener" class="btn-ghost">פתח בחלון חדש ↗</a>
+          <button type="button" id="closeModalBtn" class="close-modal-btn" aria-label="סגור">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-playlist hidden" id="modalSeriesPlaylist"></div>
+      <div class="modal-footer" id="modalFooter"></div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>
+        <strong>אוצר שיעורי ר' יואל</strong> — אינדקס מאוחד של אלפי שיעורי, חזרות וספרי הגה"ח רבי יואל כהן ע"ה.
+        כל קבצי השמע, הווידאו וה-PDF מוזרמים ישירות מהשרתים המקוריים (Google Drive, היכל מנחם, חסידות.נט, פודקאסטים, מרכז אנ"ש, אוצר החסידות והיברובוקס) ללא אחסון מדיה מקומי.
+      </p>
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="data/shiurim_data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
