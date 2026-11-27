@@ -1519,3 +1519,48 @@ html[data-theme="dark"] .player-error-banner {
   .player-error-banner { font-size: 0.78rem; padding: 6px 10px; }
   .modal-playlist { max-height: 220px; padding: 10px 12px; flex-shrink: 0; }
 }
+
+/* Async Chunk Loading Indicators */
+.chunk-loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  text-align: center;
+}
+.chunk-loading-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  margin-bottom: 12px;
+  background: var(--primary-soft);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--primary);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border-strong);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: otzarSpin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+.loading-spinner.sm {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+@keyframes otzarSpin {
+  to { transform: rotate(360deg); }
+}

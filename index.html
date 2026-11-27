@@ -17,8 +17,9 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" /></noscript>
+  <link rel="stylesheet" href="styles.css?v=974e64cf2f" />
 </head>
 <body>
   <div class="top-gold-ribbon" aria-hidden="true"></div>
@@ -252,6 +253,10 @@
             </div>
           </div>
 
+          <div id="catalogLoadingBar" class="chunk-loading-inline hidden" role="status" aria-live="polite">
+            <span class="loading-spinner sm"></span>
+            <span id="catalogLoadingText">טוען שיעורים...</span>
+          </div>
           <div id="resultsList" class="results-flow"></div>
           <div id="emptyState" class="empty-state hidden">
             <div class="empty-icon">🔍</div>
@@ -450,8 +455,15 @@
     </div>
   </footer>
 
-  <script src="config.js"></script>
-  <script src="data/shiurim_data.js"></script>
-  <script src="app.js"></script>
+  <script src="config.js?v=974e64cf2f"></script>
+  <script src="data/boot.js?v=974e64cf2f"></script>
+  <script src="app.js?v=974e64cf2f"></script>
+  <script>
+    if ("serviceWorker" in navigator && (location.protocol === "https:" || location.protocol === "http:")) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

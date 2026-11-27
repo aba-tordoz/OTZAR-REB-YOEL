@@ -2,6 +2,8 @@ import os
 import sys
 import re
 import json
+import hashlib
+import shutil
 import urllib.parse
 from collections import OrderedDict, defaultdict
 
@@ -2080,29 +2082,188 @@ def build():
         },
         "items": unified,
     }
-    # Compute exact multiSeriesCount before compacting empty fields
+    # Compute exact multiSeriesCount & pdfCount before compacting empty fields
     gid_cnt = defaultdict(int)
     for x in unified:
         gid_cnt[x["gid"]] += 1
     payload["meta"]["multiSeriesCount"] = sum(1 for c in gid_cnt.values() if c >= 2)
+    payload["meta"]["pdfCount"] = sum(1 for x in unified if "pdf" in x.get("f", []))
 
-    # Slim items cleanly: drop falsy empty fields & derivable Google Drive uc?export=download URLs
-    slim_items = []
-    for x in unified:
+    # Partition unified items into fast, balanced on-demand chunks
+    def assign_chunk_id(x):
+        cat, rb, bk, gid = x["cat"], x.get("r", ""), x.get("b", ""), x["gid"]
+        if cat == "ספרים":
+            if rb == 'כ"ק אדמו"ר הזקן':
+                if bk == "תניא — לקוטי אמרים":
+                    h = int(hashlib.md5(gid.encode("utf-8")).hexdigest()[:4], 16) % 2
+                    return f"tanya_la_{h + 1}"
+                if bk.startswith("תניא"):
+                    return "tanya_rest"
+                return "az_torah_or_lt"
+            if rb == 'כ"ק אדמו"ר הצמח צדק':
+                return "tzemach_tzedek"
+            if rb == 'כ"ק אדמו"ר הרש"ב':
+                if 'תרס"ו' in bk:
+                    return "samech_vov"
+                if 'תער"ב' in bk:
+                    return "ayen_bet"
+                return "rashab_maamarim"
+            if rb == 'כ"ק אדמו"ר מוהריי"צ':
+                return "rayatz"
+            if rb == 'כ"ק אדמו"ר':
+                if bk == "ספר המאמרים מלוקט":
+                    h = int(hashlib.md5(gid.encode("utf-8")).hexdigest()[:4], 16) % 3
+                    return f"melukat_{h + 1}"
+                if bk == "ליקוטי שיחות":
+                    return "likutei_sichos"
+                return "rebbi_other"
+        if cat == "חזרות והתוועדויות":
+            return "chazaros" if "חזרות" in bk else "fabrengens"
+        if cat == "פרשיות השבוע":
+            return "parshios"
+        if cat == "ענינא דיומא":
+            return "inyana_dyoma"
+        if cat == "סוגיות בחסידות":
+            return "sugyos"
+        if cat == "ניגונים":
+            return "nigunim"
+        return "seforim_pdf"
+
+    chunks_raw = defaultdict(list)
+    rollup_items = defaultdict(list)
+    id_map_grouped = defaultdict(list)
+    pdf_items_slim = []
+
+    def slim_item(x):
         cx = {k: v for k, v in x.items() if v not in ("", 0, [], None)}
         if cx.get("src") == "gdrive" and cx.get("dr") and cx.get("dl", "").startswith("https://drive.google.com/uc?export=download"):
             cx.pop("dl", None)
-        slim_items.append(cx)
-    payload["items"] = slim_items
+        return cx
 
-    js_path = os.path.join(DATA_DIR, "shiurim_data.js")
-    with open(js_path, "w", encoding="utf-8") as f:
-        f.write("window.SHIURIM_DATA = ")
-        json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
-        f.write(";\n")
+    for x in unified:
+        cid = assign_chunk_id(x)
+        sx = slim_item(x)
+        chunks_raw[cid].append(sx)
+        id_map_grouped[cid].append(x["id"])
+        rollup_items[(x["cat"], x.get("r", ""), x.get("b", ""))].append((cid, x))
+        if "pdf" in x.get("f", []):
+            pdf_items_slim.append(sx)
 
-    size_mb = os.path.getsize(js_path) / (1024 * 1024)
-    print(f"BUILT {js_path}: {len(unified)} items in {len(gid_cnt)} groups ({payload['meta']['multiSeriesCount']} multi-lesson series) ({size_mb:.2f} MB)")
+    chunks_dir = os.path.join(DATA_DIR, "chunks")
+    if os.path.exists(chunks_dir):
+        shutil.rmtree(chunks_dir)
+    os.makedirs(chunks_dir, exist_ok=True)
+
+    hash_acc = hashlib.sha256()
+    chunks_meta = OrderedDict()
+    total_chunks_kb = 0.0
+    for cid in sorted(chunks_raw.keys()):
+        c_items = chunks_raw[cid]
+        c_json = json.dumps(c_items, ensure_ascii=False, separators=(",", ":"))
+        c_js = f'window.__REBYOEL_CHUNK({json.dumps(cid)},{c_json});\n'
+        hash_acc.update(c_js.encode("utf-8"))
+        c_path = os.path.join(chunks_dir, f"{cid}.js")
+        with open(c_path, "w", encoding="utf-8") as cf:
+            cf.write(c_js)
+        kb = round(os.path.getsize(c_path) / 1024, 1)
+        total_chunks_kb += kb
+        chunks_meta[cid] = {"f": f"data/chunks/{cid}.js", "n": len(c_items), "kb": kb}
+
+    # Dedicated compact PDF chunk so 'ספרים ו-PDF' opens in one tiny fetch
+    pdf_json = json.dumps(pdf_items_slim, ensure_ascii=False, separators=(",", ":"))
+    pdf_js = f'window.__REBYOEL_CHUNK("_pdf_all",{pdf_json});\n'
+    hash_acc.update(pdf_js.encode("utf-8"))
+    pdf_path = os.path.join(chunks_dir, "_pdf_all.js")
+    with open(pdf_path, "w", encoding="utf-8") as pf:
+        pf.write(pdf_js)
+    chunks_meta["_pdf_all"] = {
+        "f": "data/chunks/_pdf_all.js",
+        "n": len(pdf_items_slim),
+        "kb": round(os.path.getsize(pdf_path) / 1024, 1),
+        "aux": True,
+    }
+
+    # Precomputed Stage 1/2/3 Browse Rollups across (lang, fmt) combinations
+    stage_rollups = []
+    langs = ("all", "yi", "he", "en")
+    fmts = ("all", "audio", "video", "pdf")
+    for (cat, rb, bk), entry_list in rollup_items.items():
+        bk_chunks = sorted({cid for cid, _ in entry_list})
+        stats = {}
+        for l_val in langs:
+            for f_val in fmts:
+                sub_gids = set()
+                sub_cnt = 0
+                for _, item in entry_list:
+                    if l_val != "all" and l_val not in item.get("l", []):
+                        continue
+                    if f_val != "all" and f_val not in item.get("f", []):
+                        continue
+                    sub_cnt += 1
+                    sub_gids.add(item["gid"])
+                if sub_cnt:
+                    stats[f"{l_val}|{f_val}"] = [sub_cnt, len(sub_gids)]
+        stage_rollups.append({
+            "cat": cat,
+            "r": rb,
+            "b": bk,
+            "chunks": bk_chunks,
+            "stats": stats,
+        })
+
+    payload["meta"]["chunks"] = chunks_meta
+    payload["meta"]["stageRollups"] = stage_rollups
+
+    # ID -> Chunk index file loaded lazily only for unknown ?shiur=<id> / saved bookmarks
+    id_map_path = os.path.join(DATA_DIR, "id_map.js")
+    id_map_js = "window.__REBYOEL_ID_MAP = " + json.dumps(id_map_grouped, ensure_ascii=False, separators=(",", ":")) + ";\n"
+    hash_acc.update(id_map_js.encode("utf-8"))
+    with open(id_map_path, "w", encoding="utf-8") as imf:
+        imf.write(id_map_js)
+
+    build_ver = hash_acc.hexdigest()[:10]
+    boot_payload = {"buildVersion": build_ver, "meta": payload["meta"]}
+    boot_path = os.path.join(DATA_DIR, "boot.js")
+    boot_js = "window.SHIURIM_BOOT = " + json.dumps(boot_payload, ensure_ascii=False, separators=(",", ":")) + ";\n"
+    with open(boot_path, "w", encoding="utf-8") as bf:
+        bf.write(boot_js)
+
+    # Remove legacy monolithic file if still present so repo stays fast & clean
+    legacy_js = os.path.join(DATA_DIR, "shiurim_data.js")
+    if os.path.exists(legacy_js):
+        os.remove(legacy_js)
+
+    # Stamp cache-busting ?v=<build_ver> on assets in index.html and sw.js
+    idx_path = os.path.join(BASE_DIR, "index.html")
+    if os.path.exists(idx_path):
+        idx_txt = open(idx_path, encoding="utf-8").read()
+        for asset in ("styles.css", "config.js", "data/boot.js", "app.js"):
+            idx_txt = re.sub(
+                rf'({re.escape(asset)})(?:\?v=[a-zA-Z0-9_-]+)?',
+                rf'\1?v={build_ver}',
+                idx_txt,
+            )
+        with open(idx_path, "w", encoding="utf-8") as idxf:
+            idxf.write(idx_txt)
+
+    sw_path = os.path.join(BASE_DIR, "sw.js")
+    if os.path.exists(sw_path):
+        sw_txt = open(sw_path, encoding="utf-8").read()
+        sw_txt = re.sub(
+            r'const BUILD_VERSION = "[^"]*";',
+            f'const BUILD_VERSION = "{build_ver}";',
+            sw_txt,
+        )
+        with open(sw_path, "w", encoding="utf-8") as swf:
+            swf.write(sw_txt)
+
+    boot_kb = os.path.getsize(boot_path) / 1024
+    idmap_kb = os.path.getsize(id_map_path) / 1024
+    print(
+        f"BUILT chunked data v={build_ver}: boot.js={boot_kb:.1f} KB, id_map.js={idmap_kb:.1f} KB, "
+        f"{len(chunks_raw)} data chunks ({total_chunks_kb / 1024:.2f} MB total) | "
+        f"{len(unified)} items in {len(gid_cnt)} groups ({payload['meta']['multiSeriesCount']} multi-lesson series)"
+    )
     for c in CAT_ORDER:
         cnt = sum(1 for x in unified if x["cat"] == c)
         print(f"  CAT {c}: {cnt}")

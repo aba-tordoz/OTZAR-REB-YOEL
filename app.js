@@ -5,9 +5,10 @@
 (function () {
   "use strict";
 
-  const DATA = window.SHIURIM_DATA || { meta: {}, items: [] };
-  const META = DATA.meta || {};
-  const ITEMS = DATA.items || [];
+  const BOOT = window.SHIURIM_BOOT || null;
+  const LEGACY_DATA = window.SHIURIM_DATA || null;
+  const BUILD_VERSION = (BOOT && BOOT.buildVersion) || "dev";
+  const META = (BOOT && BOOT.meta) || (LEGACY_DATA && LEGACY_DATA.meta) || {};
   const SOURCES = META.sources || {};
   const CAT_ORDER = META.catOrder || [];
   const CAT_INFO = META.catInfo || {};
@@ -15,33 +16,16 @@
   const REBBE_INFO = META.rebbeInfo || {};
   const BOOKS_BY_REBBE = META.booksByRebbe || {};
   const BOOK_INFO = META.bookInfo || {};
+  const CHUNKS_META = META.chunks || {};
+  const STAGE_ROLLUPS = META.stageRollups || [];
+  const ALL_DATA_CHUNKS = Object.keys(CHUNKS_META).filter((cid) => !CHUNKS_META[cid]?.aux);
 
+  const ITEMS = [];
+  const SEARCH_INDEX = [];
   const ITEMS_BY_ID = new Map();
   const GROUPS_MAP = new Map(); // gid -> ordered array of tracks
-  for (let i = 0; i < ITEMS.length; i++) {
-    const it = ITEMS[i];
-    if (!it.r) it.r = "";
-    if (!it.v) it.v = "";
-    if (!it.sec) it.sec = "";
-    if (!it.ser) it.ser = "";
-    if (!it.ts) it.ts = "";
-    if (!it.sub) it.sub = "";
-    if (!it.p) it.p = "";
-    if (!it.d) it.d = 0;
-    if (!it.l) it.l = [];
-    if (!it.f) it.f = [];
-    if (!it.y) it.y = [];
-    if (!it.decs) it.decs = [];
-    ITEMS_BY_ID.set(it.id, it);
-    const gid = it.gid || it.id;
-    if (!GROUPS_MAP.has(gid)) GROUPS_MAP.set(gid, []);
-    GROUPS_MAP.get(gid).push(it);
-  }
-  GROUPS_MAP.forEach((arr) => {
-    arr.sort((a, b) => (a.ord || 0) - (b.ord || 0) || a.t.localeCompare(b.t, "he"));
-  });
 
-  // Normalized search cache
+  // Normalized search cache helper
   function normSearchText(str) {
     return (str || "")
       .toLowerCase()
@@ -50,11 +34,163 @@
       .replace(/\s+/g, " ")
       .trim();
   }
-  const SEARCH_INDEX = ITEMS.map((it) =>
-    normSearchText(
-      [it.t, it.cat, it.r, it.b, it.v, it.sec, it.ser, it.ts, it.sub, it.p, (it.y || []).join(" "), SOURCES[it.src]?.name || ""].join(" ")
-    )
-  );
+
+  function hydrateAndIndexItems(rawItems) {
+    if (!Array.isArray(rawItems) || !rawItems.length) return 0;
+    const touchedGids = new Set();
+    let added = 0;
+    for (let i = 0; i < rawItems.length; i++) {
+      const it = rawItems[i];
+      if (!it || !it.id || ITEMS_BY_ID.has(it.id)) continue;
+      if (!it.r) it.r = "";
+      if (!it.v) it.v = "";
+      if (!it.sec) it.sec = "";
+      if (!it.ser) it.ser = "";
+      if (!it.ts) it.ts = "";
+      if (!it.sub) it.sub = "";
+      if (!it.p) it.p = "";
+      if (!it.d) it.d = 0;
+      if (!it.l) it.l = [];
+      if (!it.f) it.f = [];
+      if (!it.y) it.y = [];
+      if (!it.decs) it.decs = [];
+      ITEMS_BY_ID.set(it.id, it);
+      ITEMS.push(it);
+      SEARCH_INDEX.push(
+        normSearchText(
+          [it.t, it.cat, it.r, it.b, it.v, it.sec, it.ser, it.ts, it.sub, it.p, (it.y || []).join(" "), SOURCES[it.src]?.name || ""].join(" ")
+        )
+      );
+      const gid = it.gid || it.id;
+      if (!GROUPS_MAP.has(gid)) GROUPS_MAP.set(gid, []);
+      GROUPS_MAP.get(gid).push(it);
+      touchedGids.add(gid);
+      added++;
+    }
+    touchedGids.forEach((gid) => {
+      GROUPS_MAP.get(gid).sort((a, b) => (a.ord || 0) - (b.ord || 0) || a.t.localeCompare(b.t, "he"));
+    });
+    return added;
+  }
+
+  if (LEGACY_DATA && Array.isArray(LEGACY_DATA.items)) {
+    hydrateAndIndexItems(LEGACY_DATA.items);
+  }
+
+  // Lazy Chunk Loader (works over both https:// CDN/ServiceWorker & file://)
+  const _loadedChunks = new Set();
+  const _chunkPromises = new Map();
+  let _idToChunk = null;
+  let _idMapPromise = null;
+  let _allChunksPromise = null;
+
+  window.__REBYOEL_CHUNK = function (chunkId, chunkItems) {
+    hydrateAndIndexItems(chunkItems);
+    _loadedChunks.add(chunkId);
+  };
+
+  function loadScriptTag(relUrl) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = relUrl;
+      s.async = true;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error(`Failed to load ${relUrl}`));
+      document.head.appendChild(s);
+    });
+  }
+
+  function loadChunk(chunkId) {
+    if (!chunkId || !CHUNKS_META[chunkId] || _loadedChunks.has(chunkId)) return Promise.resolve();
+    if (_chunkPromises.has(chunkId)) return _chunkPromises.get(chunkId);
+    const url = `${CHUNKS_META[chunkId].f}?v=${encodeURIComponent(BUILD_VERSION)}`;
+    const p = loadScriptTag(url)
+      .then(() => { _loadedChunks.add(chunkId); })
+      .catch((err) => {
+        _chunkPromises.delete(chunkId);
+        throw err;
+      });
+    _chunkPromises.set(chunkId, p);
+    return p;
+  }
+
+  function loadIdMap() {
+    if (_idToChunk) return Promise.resolve(_idToChunk);
+    if (_idMapPromise) return _idMapPromise;
+    if (!ALL_DATA_CHUNKS.length) {
+      _idToChunk = new Map();
+      return Promise.resolve(_idToChunk);
+    }
+    _idMapPromise = loadScriptTag(`data/id_map.js?v=${encodeURIComponent(BUILD_VERSION)}`).then(() => {
+      _idToChunk = new Map();
+      const rawMap = window.__REBYOEL_ID_MAP || {};
+      Object.entries(rawMap).forEach(([cid, ids]) => {
+        for (let i = 0; i < ids.length; i++) _idToChunk.set(ids[i], cid);
+      });
+      return _idToChunk;
+    }).catch((err) => {
+      _idMapPromise = null;
+      throw err;
+    });
+    return _idMapPromise;
+  }
+
+  async function ensureItemsByIds(ids) {
+    if (!ALL_DATA_CHUNKS.length) return;
+    const missing = (ids || []).filter((id) => id && !ITEMS_BY_ID.has(id));
+    if (!missing.length) return;
+    const map = await loadIdMap();
+    const needed = [...new Set(missing.map((id) => map.get(id)).filter((cid) => cid && !_loadedChunks.has(cid)))];
+    if (needed.length) await Promise.all(needed.map(loadChunk));
+  }
+
+  function getMissingBrowseChunks(br) {
+    if (!ALL_DATA_CHUNKS.length) return [];
+    if ((br.cat === "פרשיות השבוע" || br.cat === "ענינא דיומא") && br.includeParshaBooks) {
+      return ALL_DATA_CHUNKS.filter((cid) => !_loadedChunks.has(cid));
+    }
+    if (!br.cat || (br.cat === "ספרים" && !br.r) || !br.b) return [];
+    const set = new Set();
+    for (const row of STAGE_ROLLUPS) {
+      if (row.cat !== br.cat) continue;
+      if (br.r && row.r !== br.r) continue;
+      if (row.b !== br.b) continue;
+      for (const cid of (row.chunks || [])) {
+        if (!_loadedChunks.has(cid)) set.add(cid);
+      }
+    }
+    return [...set];
+  }
+
+  function allDataChunksLoaded() {
+    if (!ALL_DATA_CHUNKS.length) return true;
+    return ALL_DATA_CHUNKS.every((cid) => _loadedChunks.has(cid));
+  }
+
+  function ensureAllChunks(onBatchDone) {
+    if (allDataChunksLoaded()) return Promise.resolve();
+    if (_allChunksPromise) return _allChunksPromise;
+    const pending = ALL_DATA_CHUNKS.filter((cid) => !_loadedChunks.has(cid));
+    let done = ALL_DATA_CHUNKS.length - pending.length;
+    const total = ALL_DATA_CHUNKS.length;
+    _allChunksPromise = (async () => {
+      const BATCH = 6;
+      for (let i = 0; i < pending.length; i += BATCH) {
+        const slice = pending.slice(i, i + BATCH);
+        await Promise.all(slice.map((cid) => loadChunk(cid).catch(() => {})));
+        done = ALL_DATA_CHUNKS.filter((cid) => _loadedChunks.has(cid)).length;
+        if (typeof onBatchDone === "function") onBatchDone(done, total);
+      }
+    })().finally(() => {
+      _allChunksPromise = null;
+    });
+    return _allChunksPromise;
+  }
+
+  function ensureSeforimPdfChunk() {
+    if (CHUNKS_META["_pdf_all"]) return loadChunk("_pdf_all");
+    return ensureAllChunks();
+  }
 
   const LS_KEYS = {
     theme: "reb_yoel_theme_v2",
@@ -230,6 +366,8 @@
     queueIndex: -1,
     queueSeriesName: "",
     currentTrackId: null,
+    activeModalShiurId: null,
+    urlShiurId: null,
     speeds: [1, 1.25, 1.5, 1.75, 2],
     speedIdx: Math.min(4, Math.max(0, Number(loadJSON(LS_KEYS.speed, 0)) || 0)),
   };
@@ -300,6 +438,8 @@
     filterParshaList: $("filterParshaList"),
     filterSourceList: $("filterSourceList"),
     activeChipsBar: $("activeChipsBar"),
+    catalogLoadingBar: $("catalogLoadingBar"),
+    catalogLoadingText: $("catalogLoadingText"),
     resultsSummary: $("resultsSummary"),
     sortSelect: $("sortSelect"),
     resultsList: $("resultsList"),
@@ -360,9 +500,13 @@
     _toastTimer = setTimeout(() => el.appToast?.classList.add("hidden"), 2300);
   }
 
-  function buildShareUrl(hashStr) {
-    const base = window.location.href.split("#")[0];
-    return hashStr ? `${base}#${hashStr}` : base;
+  const IS_FILE_PROTOCOL = window.location.protocol === "file:";
+
+  function buildShareUrl(paramStr) {
+    const clean = (paramStr || "").replace(/^[?#]+/, "");
+    const base = window.location.href.split("#")[0].split("?")[0];
+    if (!clean) return base;
+    return IS_FILE_PROTOCOL ? `${base}#${clean}` : `${base}?${clean}`;
   }
 
   async function shareLink({ title, text, hash }) {
@@ -495,66 +639,118 @@
     }
   }
 
-  let _suppressHashSync = false;
-  function buildStateHash() {
+  let _suppressUrlSync = false;
+  function buildStateParams() {
     const p = new URLSearchParams();
     if (state.view && state.view !== "browse") {
       p.set("view", state.view);
-      if (state.view === "catalog" && state.filters.q) p.set("q", state.filters.q);
-      return p.toString();
+      if (state.view === "catalog") {
+        const f = state.filters;
+        if (f.q) p.set("q", f.q);
+        if (f.lang !== "all") p.set("lang", f.lang);
+        if (f.format !== "all") p.set("fmt", f.format);
+        if (f.cat !== "all") p.set("cat", f.cat);
+        if (f.rebbe !== "all") p.set("r", f.rebbe);
+        if (f.book !== "all") p.set("b", f.book);
+        if (f.vol !== "all") p.set("v", f.vol);
+        if (f.sec !== "all") p.set("sec", f.sec);
+        if (f.yearMode !== "decades") p.set("ym", f.yearMode);
+        if (f.decade !== "all") p.set("dec", f.decade);
+        if (f.year !== "all") p.set("yr", f.year);
+        if (f.parsha !== "all") p.set("p", f.parsha);
+        if (f.source !== "all") p.set("src", f.source);
+        if (f.sort !== "default") p.set("sort", f.sort);
+        if (state.catalogMode !== "series") p.set("mode", state.catalogMode);
+        if (state.page > 1) p.set("page", String(state.page));
+      } else if (state.view === "seforim" && state.pdfLang !== "all") {
+        p.set("pdflang", state.pdfLang);
+      }
+    } else {
+      const br = state.browse;
+      if (br.lang !== "all") p.set("lang", br.lang);
+      if (br.fmt !== "all") p.set("fmt", br.fmt);
+      if (br.cat) p.set("cat", br.cat);
+      if (br.r) p.set("r", br.r);
+      if (br.b) p.set("b", br.b);
+      if (br.tanyaMode === "cycle") p.set("tm", "cycle");
+      if (br.bookMode === "maamar") p.set("bm", "maamar");
+      if (br.ts) p.set("ts", br.ts);
+      if (br.ma) p.set("ma", br.ma);
+      if (br.v) p.set("v", br.v);
+      if (br.sec) p.set("sec", br.sec);
+      if (br.includeParshaBooks) p.set("cp", "1");
     }
-    const br = state.browse;
-    if (br.lang !== "all") p.set("lang", br.lang);
-    if (br.fmt !== "all") p.set("fmt", br.fmt);
-    if (br.cat) p.set("cat", br.cat);
-    if (br.r) p.set("r", br.r);
-    if (br.b) p.set("b", br.b);
-    if (br.tanyaMode === "cycle") p.set("tm", "cycle");
-    if (br.bookMode === "maamar") p.set("bm", "maamar");
-    if (br.ts) p.set("ts", br.ts);
-    if (br.ma) p.set("ma", br.ma);
-    if (br.v) p.set("v", br.v);
-    if (br.sec) p.set("sec", br.sec);
+    if (state.urlShiurId) p.set("shiur", state.urlShiurId);
     return p.toString();
   }
 
-  function syncUrlHash(push = true) {
-    if (_suppressHashSync) return;
-    const h = buildStateHash();
-    const nextUrl = h ? `#${h}` : window.location.pathname + window.location.search;
-    const curHash = window.location.hash.replace(/^#/, "");
-    if (curHash === h) return;
-    try {
-      if (push) history.pushState(null, "", nextUrl);
-      else history.replaceState(null, "", nextUrl);
-    } catch {
-      if (h) window.location.hash = h;
+  function syncUrlState(push = true) {
+    if (_suppressUrlSync) return;
+    const qs = buildStateParams();
+    if (IS_FILE_PROTOCOL) {
+      const nextUrl = qs ? `#${qs}` : window.location.pathname;
+      const curHash = window.location.hash.replace(/^#/, "");
+      if (curHash === qs) return;
+      try {
+        if (push) history.pushState(null, "", nextUrl);
+        else history.replaceState(null, "", nextUrl);
+      } catch {
+        if (qs) window.location.hash = qs;
+      }
+    } else {
+      const nextUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+      const curUrl = `${window.location.pathname}${window.location.search}`;
+      if (curUrl === nextUrl && !window.location.hash) return;
+      try {
+        if (push) history.pushState(null, "", nextUrl);
+        else history.replaceState(null, "", nextUrl);
+      } catch {}
     }
   }
 
-  function applyHashFromLocation() {
+  function parseLocationParams() {
+    const p = new URLSearchParams();
     const rawH = window.location.hash.replace(/^#/, "");
-    const p = new URLSearchParams(rawH);
+    if (rawH) {
+      new URLSearchParams(rawH).forEach((v, k) => p.set(k, v));
+    }
+    if (window.location.search && window.location.search.length > 1) {
+      new URLSearchParams(window.location.search).forEach((v, k) => p.set(k, v));
+    }
+    return p;
+  }
+
+  let _routeToken = 0;
+  async function applyStateFromLocation() {
+    const myRoute = ++_routeToken;
+    const p = parseLocationParams();
     const shiurId = p.get("shiur");
-    _suppressHashSync = true;
+    const hasExplicitBrowseCtx = p.has("cat") || p.has("r") || p.has("b") || p.has("v") || p.has("sec") || p.get("view") === "catalog";
+
+    if (!shiurId && el.mediaModal && !el.mediaModal.classList.contains("hidden")) {
+      closeMediaModal(true);
+    }
+
+    let resolvedItem = null;
+    if (shiurId) {
+      try { await ensureItemsByIds([shiurId]); } catch {}
+      if (myRoute !== _routeToken) return;
+      resolvedItem = ITEMS_BY_ID.get(shiurId) || null;
+    }
+
+    _suppressUrlSync = true;
     try {
-      if (shiurId && ITEMS_BY_ID.has(shiurId)) {
-        const it = ITEMS_BY_ID.get(shiurId);
+      const view = p.get("view") || "browse";
+      if (resolvedItem && !hasExplicitBrowseCtx) {
         Object.assign(state.browse, {
           lang: "all", fmt: "all",
-          cat: it.cat || null, r: it.r || null, b: it.b || null,
+          cat: resolvedItem.cat || null, r: resolvedItem.r || null, b: resolvedItem.b || null,
           tanyaMode: "perek", bookMode: "vol", ts: null, ma: null,
-          v: it.v || null, sec: it.sec || null, stageFilter: "", includeParshaBooks: false,
+          v: resolvedItem.v || null, sec: resolvedItem.sec || null, stageFilter: "", includeParshaBooks: false,
         });
+        syncBrowseFilterPills();
         switchView("browse");
-        if (it.au) startSeriesPlayback(it.gid, it.id);
-        else if (it.dr) openMediaModal(it, "drive", it.gid);
-        else if (it.vi) openMediaModal(it, "video", it.gid);
-        else if (it.pd) openMediaModal(it, "pdf", it.gid);
-        return;
-      }
-      const view = p.get("view") || "browse";
-      if (view === "browse") {
+      } else if (view === "browse") {
         Object.assign(state.browse, {
           lang: p.get("lang") || "all",
           fmt: p.get("fmt") || "all",
@@ -568,23 +764,68 @@
           v: p.get("v") || null,
           sec: p.get("sec") || null,
           stageFilter: "",
-          includeParshaBooks: false,
+          includeParshaBooks: p.get("cp") === "1",
         });
-        el.browseLangPills.querySelectorAll(".mini-pill").forEach((b) => b.classList.toggle("active", b.dataset.blang === state.browse.lang));
-        el.browseFmtPills.querySelectorAll(".mini-pill").forEach((b) => b.classList.toggle("active", b.dataset.bfmt === state.browse.fmt));
+        syncBrowseFilterPills();
         switchView("browse");
       } else if (el.views[view]) {
-        if (view === "catalog" && p.has("q")) {
-          state.filters.q = p.get("q") || "";
+        if (view === "catalog") {
+          Object.assign(state.filters, {
+            q: p.get("q") || "",
+            lang: p.get("lang") || "all",
+            format: p.get("fmt") || "all",
+            cat: p.get("cat") || "all",
+            rebbe: p.get("r") || "all",
+            book: p.get("b") || "all",
+            vol: p.get("v") || "all",
+            sec: p.get("sec") || "all",
+            yearMode: p.get("ym") || "decades",
+            decade: p.get("dec") || "all",
+            year: p.get("yr") || "all",
+            parsha: p.get("p") || "all",
+            source: p.get("src") || "all",
+            sort: p.get("sort") || "default",
+          });
+          state.catalogMode = p.get("mode") === "flat" ? "flat" : "series";
+          state.page = Math.max(1, Number(p.get("page") || 1) || 1);
           el.searchInput.value = state.filters.q;
           el.clearSearchBtn.classList.toggle("hidden", !state.filters.q);
-          applyCatalogFilters(true);
+          el.sortSelect.value = state.filters.sort;
+          el.filtersSidebar.querySelectorAll(".ym-btn").forEach((b) => b.classList.toggle("active", b.dataset.ym === state.filters.yearMode));
+          document.querySelectorAll(".vm-btn").forEach((b) => b.classList.toggle("active", b.dataset.mode === state.catalogMode));
+          applyCatalogFilters(false, true);
+        } else if (view === "seforim") {
+          state.pdfLang = p.get("pdflang") || "all";
+          el.pdfLangFilterPills.querySelectorAll(".pill-filter").forEach((b) => b.classList.toggle("active", b.dataset.pdflang === state.pdfLang));
         }
         switchView(view);
       }
+
+      if (resolvedItem) {
+        if (resolvedItem.au) startSeriesPlayback(resolvedItem.gid, resolvedItem.id, { fromUrl: true });
+        else if (resolvedItem.dr) openMediaModal(resolvedItem, "drive", resolvedItem.gid, { fromUrl: true });
+        else if (resolvedItem.vi) openMediaModal(resolvedItem, "video", resolvedItem.gid, { fromUrl: true });
+        else if (resolvedItem.pd) openMediaModal(resolvedItem, "pdf", resolvedItem.gid, { fromUrl: true });
+      }
     } finally {
-      _suppressHashSync = false;
+      _suppressUrlSync = false;
     }
+    if (!IS_FILE_PROTOCOL && window.location.hash && !window.location.search) {
+      syncUrlState(false);
+    }
+  }
+
+  function syncBrowseFilterPills() {
+    el.browseLangPills.querySelectorAll(".mini-pill").forEach((b) => b.classList.toggle("active", b.dataset.blang === state.browse.lang));
+    el.browseFmtPills.querySelectorAll(".mini-pill").forEach((b) => b.classList.toggle("active", b.dataset.bfmt === state.browse.fmt));
+    const { lang, fmt } = state.browse;
+    const isFiltered = lang !== "all" || fmt !== "all";
+    const lTxt = lang === "all" ? "כל השפות" : (LANG_META[lang]?.label || lang);
+    const fTxt = fmt === "all" ? "הכל" : (FMT_META[fmt]?.label || fmt);
+    if (el.browseFiltersSummary) {
+      el.browseFiltersSummary.textContent = `${isFiltered ? "סינון פעיל" : "סינון מהיר"}: ${lTxt} · ${fTxt}`;
+    }
+    el.browseTopbar?.classList.toggle("has-active", isFiltered);
   }
 
   function switchView(viewName) {
@@ -600,12 +841,15 @@
     el.mobileMoreNavBtn?.setAttribute("aria-expanded", "false");
     el.mobileMoreNavBtn?.classList.toggle("active", ["portals", "submitArchive", "feedback"].includes(viewName));
     if (viewName === "browse") renderBrowse();
-    if (viewName === "catalog") renderCatalog();
+    if (viewName === "catalog") {
+      applyCatalogFilters(false, true);
+      startCatalogChunksStream();
+    }
     if (viewName === "seforim") renderSeforimPdfView();
     if (viewName === "saved") renderSavedView();
     if (viewName === "submitArchive") renderSubmitArchiveView();
     if (viewName === "feedback") renderFeedbackView();
-    syncUrlHash(true);
+    syncUrlState(true);
     scrollToRelevantContent(el.views[viewName]);
   }
 
@@ -659,7 +903,7 @@
     else if (br.r) { br.r = null; }
     else if (br.cat) { br.cat = null; }
     renderBrowse();
-    syncUrlHash(true);
+    syncUrlState(true);
   }
 
   function jumpBrowseCrumb(level) {
@@ -684,7 +928,7 @@
       br.sec = null;
     }
     renderBrowse();
-    syncUrlHash(true);
+    syncUrlState(true);
   }
 
   function renderStepGrid(cards, opts = {}) {
@@ -717,14 +961,57 @@
     `).join("")}</div>`;
   }
 
+  function sumRollupStats(predFn, lang, fmt) {
+    const key = `${lang}|${fmt}`;
+    let cnt = 0;
+    let ser = 0;
+    for (let i = 0; i < STAGE_ROLLUPS.length; i++) {
+      const row = STAGE_ROLLUPS[i];
+      if (!predFn(row)) continue;
+      const st = row.stats && row.stats[key];
+      if (st) {
+        cnt += st[0];
+        ser += st[1];
+      }
+    }
+    return [cnt, ser];
+  }
+
   let _stageFilterNeeded = false;
+  let _browseLoadToken = 0;
   function renderBrowse() {
     renderBrowseBreadcrumbs();
-    const pool = getBrowsePool();
     const br = state.browse;
     el.browseStepTools.innerHTML = "";
     _stageFilterNeeded = false;
     if (el.stageFilterInput.value !== br.stageFilter) el.stageFilterInput.value = br.stageFilter;
+
+    // Stages 1-3 render instantaneously from tiny boot.js STAGE_ROLLUPS; Stage 4+ loads only that book's chunk!
+    const missingChunks = getMissingBrowseChunks(br);
+    if (missingChunks.length) {
+      const myToken = ++_browseLoadToken;
+      el.stageFilterInput.classList.add("hidden");
+      el.browseStepKicker.textContent = `טוען — ${br.b || br.cat || ""}`;
+      el.browseStepTitle.textContent = br.b || br.cat || "טוען שיעורים...";
+      el.browseStepSub.textContent = "טוען את שיעורי המדור...";
+      el.browseStageContent.innerHTML = `
+        <div class="chunk-loading-box">
+          <div class="loading-spinner"></div>
+          <div><strong>טוען את שיעורי ${escHtml(br.b || br.cat || "המדור")}...</strong></div>
+        </div>`;
+      Promise.all(missingChunks.map((cid) => loadChunk(cid)))
+        .then(() => {
+          if (myToken === _browseLoadToken && state.view === "browse") renderBrowse();
+        })
+        .catch(() => {
+          if (myToken === _browseLoadToken) {
+            el.browseStageContent.innerHTML = `<div class="empty-state"><h3>שגיאה בטעינת השיעורים</h3><p>אנא בדוק את החיבור ונסה לרענן.</p></div>`;
+          }
+        });
+      return;
+    }
+
+    const pool = getBrowsePool();
     try {
       renderBrowseStage(pool, br);
     } finally {
@@ -733,6 +1020,7 @@
   }
 
   function renderBrowseStage(pool, br) {
+    const useRollup = STAGE_ROLLUPS.length > 0;
 
     // STAGE 1: Category Selection
     if (!br.cat) {
@@ -741,14 +1029,21 @@
       el.browseStepSub.textContent = "דפדף בקלות לפי מדור, ספר או נושא עד לסדרת השיעורים הרצויה";
 
       const cards = CAT_ORDER.map((cat) => {
-        const subset = pool.filter((x) => x.cat === cat);
-        const seriesCnt = new Set(subset.map((x) => x.gid)).size;
+        let count = 0;
+        let seriesCnt = 0;
+        if (useRollup) {
+          [count, seriesCnt] = sumRollupStats((row) => row.cat === cat, br.lang, br.fmt);
+        } else {
+          const subset = pool.filter((x) => x.cat === cat);
+          count = subset.length;
+          seriesCnt = new Set(subset.map((x) => x.gid)).size;
+        }
         const info = CAT_INFO[cat] || {};
         return {
           action: "pick-cat",
           val: cat,
           icon: info.icon || "📚",
-          badge: `${subset.length.toLocaleString("he-IL")} שיעורים`,
+          badge: `${count.toLocaleString("he-IL")} שיעורים`,
           title: info.title || cat,
           desc: info.desc || "",
           foot: `${seriesCnt.toLocaleString("he-IL")} סדרות ופריטים`,
@@ -767,15 +1062,22 @@
       el.browseStepSub.textContent = "בחר מרבותינו נשיאינו (מכ\"ק אדמו\"ר הזקן עד כ\"ק אדמו\"ר)";
 
       const cards = REBBE_ORDER.map((rb) => {
-        const sub = catPool.filter((x) => x.r === rb);
-        const seriesCnt = new Set(sub.map((x) => x.gid)).size;
+        let count = 0;
+        let seriesCnt = 0;
+        if (useRollup) {
+          [count, seriesCnt] = sumRollupStats((row) => row.cat === "ספרים" && row.r === rb, br.lang, br.fmt);
+        } else {
+          const sub = catPool.filter((x) => x.r === rb);
+          count = sub.length;
+          seriesCnt = new Set(sub.map((x) => x.gid)).size;
+        }
         const info = REBBE_INFO[rb] || {};
         const bkCnt = (BOOKS_BY_REBBE[rb] || []).length;
         return {
           action: "pick-rebbe",
           val: rb,
           icon: "👑",
-          badge: `${sub.length.toLocaleString("he-IL")} שיעורים`,
+          badge: `${count.toLocaleString("he-IL")} שיעורים`,
           title: info.title || rb,
           sub: info.sub || "",
           desc: info.desc || "",
@@ -789,44 +1091,74 @@
     // STAGE 3 (Pick Book inside Rebbe, or sub-domain inside other Cat)
     if (!br.b) {
       if (br.cat === "ספרים") {
-        const rbPool = catPool.filter((x) => x.r === br.r);
         el.browseStepKicker.textContent = `שלב 3 — ${br.r}`;
         el.browseStepTitle.textContent = `איזה ספר של ${br.r}?`;
         el.browseStepSub.textContent = "בחר ספר לעבור לחלקים / פרקים ולסדרות השיעורים";
 
         const orderedBooks = BOOKS_BY_REBBE[br.r] || [];
-        const presentBooks = new Set(rbPool.map((x) => x.b));
-        const finalBooks = orderedBooks.filter((bk) => presentBooks.has(bk));
-        presentBooks.forEach((bk) => { if (!finalBooks.includes(bk)) finalBooks.push(bk); });
-
-        const cards = finalBooks.map((bk) => {
-          const sub = rbPool.filter((x) => x.b === bk);
-          const serCnt = new Set(sub.map((x) => x.gid)).size;
-          const info = BOOK_INFO[bk] || ["חלק", "מאמר", ""];
-          return {
-            action: "pick-book",
-            val: bk,
-            icon: bk.includes("שיחות") ? "📜" : (bk.includes("תניא") ? "📘" : "📕"),
-            badge: `${sub.length.toLocaleString("he-IL")} שיעורים`,
-            title: bk,
-            desc: info[2] || "",
-            foot: `${serCnt.toLocaleString("he-IL")} סדרות שיעורים`,
-          };
-        });
-        if (br.r === 'כ"ק אדמו"ר') {
-          const chzCnt = pool.filter((x) => x.b === 'חזרות על התוועדויות הרבי').length;
-          if (chzCnt) {
-            cards.push({
-              action: "jump-chazaros",
-              val: "chazaros",
-              icon: "🔄",
-              badge: `${chzCnt.toLocaleString("he-IL")} הקלטות`,
-              title: "חזרות על התוועדויות הרבי",
-              sub: "מפי ה'חוזר' ר' יואל",
-              desc: "מעבר ישיר להקלטות חזרה משבתות ומועדים לפי שנים",
-              foot: "דפדוף לפי שנים",
-            });
+        let cards = [];
+        let chzCnt = 0;
+        if (useRollup) {
+          const bookStats = new Map();
+          for (const row of STAGE_ROLLUPS) {
+            if (row.cat !== "ספרים" || row.r !== br.r) continue;
+            const st = row.stats && row.stats[`${br.lang}|${br.fmt}`];
+            if (!st) continue;
+            const prev = bookStats.get(row.b) || [0, 0];
+            bookStats.set(row.b, [prev[0] + st[0], prev[1] + st[1]]);
           }
+          const finalBooks = orderedBooks.filter((bk) => bookStats.has(bk));
+          bookStats.forEach((_, bk) => { if (!finalBooks.includes(bk)) finalBooks.push(bk); });
+          cards = finalBooks.map((bk) => {
+            const [cnt, serCnt] = bookStats.get(bk);
+            const info = BOOK_INFO[bk] || ["חלק", "מאמר", ""];
+            return {
+              action: "pick-book",
+              val: bk,
+              icon: bk.includes("שיחות") ? "📜" : (bk.includes("תניא") ? "📘" : "📕"),
+              badge: `${cnt.toLocaleString("he-IL")} שיעורים`,
+              title: bk,
+              desc: info[2] || "",
+              foot: `${serCnt.toLocaleString("he-IL")} סדרות שיעורים`,
+            };
+          });
+          if (br.r === 'כ"ק אדמו"ר') {
+            [chzCnt] = sumRollupStats((row) => row.b === 'חזרות על התוועדויות הרבי', br.lang, br.fmt);
+          }
+        } else {
+          const rbPool = catPool.filter((x) => x.r === br.r);
+          const presentBooks = new Set(rbPool.map((x) => x.b));
+          const finalBooks = orderedBooks.filter((bk) => presentBooks.has(bk));
+          presentBooks.forEach((bk) => { if (!finalBooks.includes(bk)) finalBooks.push(bk); });
+          cards = finalBooks.map((bk) => {
+            const sub = rbPool.filter((x) => x.b === bk);
+            const serCnt = new Set(sub.map((x) => x.gid)).size;
+            const info = BOOK_INFO[bk] || ["חלק", "מאמר", ""];
+            return {
+              action: "pick-book",
+              val: bk,
+              icon: bk.includes("שיחות") ? "📜" : (bk.includes("תניא") ? "📘" : "📕"),
+              badge: `${sub.length.toLocaleString("he-IL")} שיעורים`,
+              title: bk,
+              desc: info[2] || "",
+              foot: `${serCnt.toLocaleString("he-IL")} סדרות שיעורים`,
+            };
+          });
+          if (br.r === 'כ"ק אדמו"ר') {
+            chzCnt = pool.filter((x) => x.b === 'חזרות על התוועדויות הרבי').length;
+          }
+        }
+        if (br.r === 'כ"ק אדמו"ר' && chzCnt) {
+          cards.push({
+            action: "jump-chazaros",
+            val: "chazaros",
+            icon: "🔄",
+            badge: `${chzCnt.toLocaleString("he-IL")} הקלטות`,
+            title: "חזרות על התוועדויות הרבי",
+            sub: "מפי ה'חוזר' ר' יואל",
+            desc: "מעבר ישיר להקלטות חזרה משבתות ומועדים לפי שנים",
+            foot: "דפדוף לפי שנים",
+          });
         }
         renderStepGrid(cards);
       } else {
@@ -836,13 +1168,26 @@
         el.browseStepSub.textContent = CAT_INFO[br.cat]?.desc || "";
 
         const counts = new Map();
-        const serSets = new Map();
-        catPool.forEach((x) => {
-          const bk = x.b || "כללי";
-          counts.set(bk, (counts.get(bk) || 0) + 1);
-          if (!serSets.has(bk)) serSets.set(bk, new Set());
-          serSets.get(bk).add(x.gid);
-        });
+        const serCounts = new Map();
+        if (useRollup) {
+          for (const row of STAGE_ROLLUPS) {
+            if (row.cat !== br.cat) continue;
+            const st = row.stats && row.stats[`${br.lang}|${br.fmt}`];
+            if (!st) continue;
+            const bk = row.b || "כללי";
+            counts.set(bk, (counts.get(bk) || 0) + st[0]);
+            serCounts.set(bk, (serCounts.get(bk) || 0) + st[1]);
+          }
+        } else {
+          const serSets = new Map();
+          catPool.forEach((x) => {
+            const bk = x.b || "כללי";
+            counts.set(bk, (counts.get(bk) || 0) + 1);
+            if (!serSets.has(bk)) serSets.set(bk, new Set());
+            serSets.get(bk).add(x.gid);
+          });
+          serSets.forEach((s, bk) => serCounts.set(bk, s.size));
+        }
         const sortedBs = sortValuesClean([...counts.keys()]);
         const cards = sortedBs.map((bk) => ({
           action: "pick-book",
@@ -850,7 +1195,7 @@
           icon: br.cat === "ניגונים" ? "🎵" : (br.cat === "פרשיות השבוע" ? "📖" : "📂"),
           badge: `${counts.get(bk).toLocaleString("he-IL")} פריטים`,
           title: bk,
-          foot: `${serSets.get(bk).size.toLocaleString("he-IL")} סדרות ושיעורים`,
+          foot: `${(serCounts.get(bk) || 0).toLocaleString("he-IL")} סדרות ושיעורים`,
         }));
         renderStepGrid(cards, { compact: sortedBs.length > 6 });
       }
@@ -1310,7 +1655,36 @@
   // =========================================================================
   // VIEW 2: Search & Faceted Catalog (with Series Grouping)
   // =========================================================================
-  function applyCatalogFilters(resetPage = true) {
+  let _catalogStreamActive = false;
+  function startCatalogChunksStream() {
+    if (allDataChunksLoaded()) {
+      el.catalogLoadingBar?.classList.add("hidden");
+      return;
+    }
+    if (_catalogStreamActive) return;
+    _catalogStreamActive = true;
+    const total = ALL_DATA_CHUNKS.length;
+    const loadedNow = ALL_DATA_CHUNKS.filter((c) => _loadedChunks.has(c)).length;
+    el.catalogLoadingBar?.classList.remove("hidden");
+    if (el.catalogLoadingText) {
+      el.catalogLoadingText.textContent = `טוען את כל מאגר החיפוש (${loadedNow} מתוך ${total})...`;
+    }
+    ensureAllChunks((done, tot) => {
+      if (el.catalogLoadingText) {
+        el.catalogLoadingText.textContent = `טוען את כל מאגר החיפוש (${done} מתוך ${tot})...`;
+      }
+      if (state.view === "catalog") applyCatalogFilters(false, "none");
+    }).then(() => {
+      _catalogStreamActive = false;
+      el.catalogLoadingBar?.classList.add("hidden");
+      if (state.view === "catalog") applyCatalogFilters(false, "none");
+    }).catch(() => {
+      _catalogStreamActive = false;
+      el.catalogLoadingBar?.classList.add("hidden");
+    });
+  }
+
+  function applyCatalogFilters(resetPage = true, urlMode = "push") {
     const f = state.filters;
     const qNorm = normSearchText(f.q);
     const terms = qNorm ? qNorm.split(" ").filter(Boolean) : [];
@@ -1348,7 +1722,10 @@
     state.filtered = out;
     state.groupedSeries = buildTracksSeriesGroups(out);
     if (resetPage) state.page = 1;
-    if (state.view === "catalog") renderCatalog();
+    if (state.view === "catalog") {
+      renderCatalog();
+      if (urlMode !== "none" && urlMode !== true) syncUrlState(urlMode === "push");
+    }
   }
 
   function renderSidebarFacets() {
@@ -1551,13 +1928,33 @@
   // =========================================================================
   // VIEW 3 & 4: PDF Seforim & Saved
   // =========================================================================
+  let _pdfLoadStarted = false;
   function renderSeforimPdfView() {
+    if (CHUNKS_META["_pdf_all"] && !_loadedChunks.has("_pdf_all")) {
+      el.seforimPdfGrid.innerHTML = `<div class="chunk-loading-box"><div class="loading-spinner"></div><div><strong>טוען ספרים וכתבי יד...</strong></div></div>`;
+      if (!_pdfLoadStarted) {
+        _pdfLoadStarted = true;
+        ensureSeforimPdfChunk().then(() => {
+          _pdfLoadStarted = false;
+          if (state.view === "seforim") renderSeforimPdfView();
+        }).catch(() => { _pdfLoadStarted = false; });
+      }
+      return;
+    }
     const pdfs = ITEMS.filter((it) => (it.f || []).includes("pdf") && (state.pdfLang === "all" || (it.l || []).includes(state.pdfLang)));
     renderFlatCards(el.seforimPdfGrid, pdfs);
   }
 
   function renderSavedView() {
     el.navSavedCount.textContent = state.bookmarks.size.toLocaleString("he-IL");
+    const neededIds = [...new Set([...state.bookmarks, ...state.history])].filter((id) => id && !ITEMS_BY_ID.has(id));
+    if (neededIds.length && ALL_DATA_CHUNKS.length) {
+      el.bookmarksList.innerHTML = `<div class="chunk-loading-box"><div class="loading-spinner"></div><div><strong>טוען פריטים שמורים...</strong></div></div>`;
+      ensureItemsByIds(neededIds).then(() => {
+        if (state.view === "saved") renderSavedView();
+      }).catch(() => {});
+      return;
+    }
     const bmItems = [...state.bookmarks].map((id) => ITEMS_BY_ID.get(id)).filter(Boolean);
     renderFlatCards(el.bookmarksList, bmItems);
     const histItems = state.history.map((id) => ITEMS_BY_ID.get(id)).filter(Boolean);
@@ -1566,7 +1963,16 @@
 
   function renderResumeBanner() {
     if (!state.history.length) { el.resumeBanner.classList.add("hidden"); return; }
-    const last = ITEMS_BY_ID.get(state.history[0]);
+    const lastId = state.history[0];
+    if (!ITEMS_BY_ID.has(lastId)) {
+      if (ALL_DATA_CHUNKS.length) {
+        ensureItemsByIds([lastId]).then(() => {
+          if (ITEMS_BY_ID.has(lastId)) renderResumeBanner();
+        }).catch(() => {});
+      }
+      return;
+    }
+    const last = ITEMS_BY_ID.get(lastId);
     if (!last || (!last.au && !last.dr)) { el.resumeBanner.classList.add("hidden"); return; }
     const prog = state.progress[last.id];
     const timeStr = prog && prog.t > 10 ? ` (עצרת ב-${formatTime(prog.t)})` : "";
@@ -1595,28 +2001,30 @@
     saveJSON(LS_KEYS.history, state.history);
   }
 
-  function startSeriesPlayback(gid, startTrackId = null) {
+  function startSeriesPlayback(gid, startTrackId = null, opts = {}) {
     const rawTracks = GROUPS_MAP.get(gid) || [];
     const audioTracks = rawTracks.filter((t) => !!t.au);
     if (!audioTracks.length) {
       // Fallback: Drive / Video series modal
       const target = (startTrackId && ITEMS_BY_ID.get(startTrackId)) || rawTracks[0];
-      if (target) openMediaModal(target, target.dr ? "drive" : (target.vi ? "video" : "pdf"), gid);
+      if (target) openMediaModal(target, target.dr ? "drive" : (target.vi ? "video" : "pdf"), gid, opts);
       return;
     }
     let idx = startTrackId ? audioTracks.findIndex((t) => t.id === startTrackId) : 0;
     if (idx < 0) idx = 0;
     const serLabel = audioTracks[0].ser || audioTracks[0].sec || audioTracks[0].b;
-    startAudioQueue(audioTracks, idx, serLabel);
+    startAudioQueue(audioTracks, idx, serLabel, opts);
   }
 
-  function startAudioQueue(tracks, idx, seriesLabel = "") {
+  function startAudioQueue(tracks, idx, seriesLabel = "", opts = {}) {
     if (!tracks.length || !tracks[idx]?.au) return;
     state.queue = tracks;
     state.queueIndex = idx;
     state.queueSeriesName = seriesLabel;
     const it = tracks[idx];
     state.currentTrackId = it.id;
+    state.urlShiurId = it.id;
+    if (!opts.fromUrl) syncUrlState(!opts.replaceUrl);
 
     el.audioPlayerBar.classList.remove("hidden");
     document.body.classList.add("has-player");
@@ -1717,7 +2125,7 @@
     });
     el.nativeAudio.addEventListener("ended", () => {
       if (el.playerAutoNext.checked && state.queueIndex + 1 < state.queue.length) {
-        startAudioQueue(state.queue, state.queueIndex + 1, state.queueSeriesName);
+        startAudioQueue(state.queue, state.queueIndex + 1, state.queueSeriesName, { replaceUrl: true });
       } else {
         el.playerPlayPauseBtn.textContent = "▶";
       }
@@ -1747,10 +2155,10 @@
       }
     });
     el.playerNextBtn.addEventListener("click", () => {
-      if (state.queueIndex + 1 < state.queue.length) startAudioQueue(state.queue, state.queueIndex + 1, state.queueSeriesName);
+      if (state.queueIndex + 1 < state.queue.length) startAudioQueue(state.queue, state.queueIndex + 1, state.queueSeriesName, { replaceUrl: true });
     });
     el.playerPrevBtn.addEventListener("click", () => {
-      if (state.queueIndex > 0) startAudioQueue(state.queue, state.queueIndex - 1, state.queueSeriesName);
+      if (state.queueIndex > 0) startAudioQueue(state.queue, state.queueIndex - 1, state.queueSeriesName, { replaceUrl: true });
     });
     el.playerBack30Btn.addEventListener("click", () => {
       try { el.nativeAudio.currentTime = Math.max(0, (el.nativeAudio.currentTime || 0) - 15); } catch {}
@@ -1778,19 +2186,26 @@
       el.playerErrorBanner?.classList.add("hidden");
       el.audioPlayerBar.classList.add("hidden");
       document.body.classList.remove("has-player");
+      state.currentTrackId = null;
+      state.urlShiurId = null;
+      syncUrlState(false);
     });
   }
 
   // =========================================================================
   // Media / Drive / Video Modal WITH Built-in Series Playlist!
   // =========================================================================
-  function openMediaModal(it, mode, gidOverride = null) {
+  function openMediaModal(it, mode, gidOverride = null, opts = {}) {
     if (!it) return;
     if (!el.nativeAudio.paused && mode !== "pdf") {
       el.nativeAudio.pause();
       el.playerPlayPauseBtn.textContent = "▶";
     }
     pushHistory(it.id);
+    const wasOpen = !el.mediaModal.classList.contains("hidden");
+    state.activeModalShiurId = it.id;
+    state.urlShiurId = it.id;
+    if (!opts.fromUrl) syncUrlState(!wasOpen);
 
     el.modalTitle.textContent = it.t;
     el.modalPills.innerHTML = `${getLangBadges(it)} <span class="badge">${escHtml(it.b || it.cat)}</span>` + (it.y?.[0] ? `<span class="badge badge-year">${escHtml(it.y[0])}</span>` : "");
@@ -1906,7 +2321,7 @@
     document.body.classList.add("lock-scroll");
   }
 
-  function closeMediaModal() {
+  function closeMediaModal(silent = false) {
     el.mediaModal.classList.add("hidden");
     document.body.classList.remove("lock-scroll");
     const vid = $("modalVideoEl");
@@ -1918,6 +2333,12 @@
     el.modalBody.querySelectorAll("iframe").forEach((fr) => { fr.src = "about:blank"; });
     el.modalBody.innerHTML = "";
     el.modalSeriesPlaylist.innerHTML = "";
+    if (state.activeModalShiurId || state.urlShiurId) {
+      state.activeModalShiurId = null;
+      if (state.urlShiurId && !state.currentTrackId) state.urlShiurId = null;
+      else if (el.audioPlayerBar.classList.contains("hidden") || el.nativeAudio.paused) state.urlShiurId = null;
+      if (!silent) syncUrlState(false);
+    }
   }
 
   // =========================================================================
@@ -1944,7 +2365,7 @@
       el.mobileMoreNavBtn.setAttribute("aria-expanded", String(isOpen));
     });
 
-    // Global Search -> switches cleanly to Catalog (Grouped Series view!)
+    // Global Search -> switches cleanly to Catalog (Grouped Series view!) and streams chunks
     let searchTimer = null;
     el.searchInput.addEventListener("input", () => {
       const val = el.searchInput.value.trim();
@@ -1952,23 +2373,31 @@
       clearTimeout(searchTimer);
       searchTimer = setTimeout(() => {
         state.filters.q = val;
-        applyCatalogFilters(true);
+        state.page = 1;
         if (val && state.view !== "catalog") switchView("catalog");
+        else {
+          applyCatalogFilters(true, "replace");
+          if (state.view === "catalog") startCatalogChunksStream();
+        }
       }, 220);
     });
     el.searchInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         clearTimeout(searchTimer);
         state.filters.q = el.searchInput.value.trim();
-        applyCatalogFilters(true);
+        state.page = 1;
         if (state.view !== "catalog") switchView("catalog");
+        else {
+          applyCatalogFilters(true, "push");
+          startCatalogChunksStream();
+        }
       }
     });
     el.clearSearchBtn.addEventListener("click", () => {
       el.searchInput.value = "";
       el.clearSearchBtn.classList.add("hidden");
       state.filters.q = "";
-      applyCatalogFilters(true);
+      applyCatalogFilters(true, "push");
     });
     document.addEventListener("keydown", (e) => {
       if (e.key === "/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) {
@@ -1980,16 +2409,7 @@
     });
 
     // Browse Top Filter Strip & Breadcrumbs
-    const updateBrowseFiltersSummary = () => {
-      const { lang, fmt } = state.browse;
-      const isFiltered = lang !== "all" || fmt !== "all";
-      const lTxt = lang === "all" ? "כל השפות" : (LANG_META[lang]?.label || lang);
-      const fTxt = fmt === "all" ? "הכל" : (FMT_META[fmt]?.label || fmt);
-      if (el.browseFiltersSummary) {
-        el.browseFiltersSummary.textContent = `${isFiltered ? "סינון פעיל" : "סינון מהיר"}: ${lTxt} · ${fTxt}`;
-      }
-      el.browseTopbar?.classList.toggle("has-active", isFiltered);
-    };
+    const updateBrowseFiltersSummary = () => syncBrowseFilterPills();
     el.browseFiltersToggleBtn?.addEventListener("click", () => {
       const open = el.browseTopbar.classList.toggle("open");
       el.browseFiltersToggleBtn.setAttribute("aria-expanded", String(open));
@@ -1998,17 +2418,17 @@
       const btn = e.target.closest("[data-blang]");
       if (!btn) return;
       state.browse.lang = btn.dataset.blang;
-      el.browseLangPills.querySelectorAll(".mini-pill").forEach((b) => b.classList.toggle("active", b === btn));
       updateBrowseFiltersSummary();
       renderBrowse();
+      syncUrlState(true);
     });
     el.browseFmtPills.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-bfmt]");
       if (!btn) return;
       state.browse.fmt = btn.dataset.bfmt;
-      el.browseFmtPills.querySelectorAll(".mini-pill").forEach((b) => b.classList.toggle("active", b === btn));
       updateBrowseFiltersSummary();
       renderBrowse();
+      syncUrlState(true);
     });
     el.browseBreadcrumbs.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-crumb]");
@@ -2024,7 +2444,7 @@
       state.filters.book = br.b || "all";
       state.filters.vol = br.v || "all";
       state.filters.sec = br.sec || "all";
-      applyCatalogFilters(true);
+      state.page = 1;
       switchView("catalog");
     });
 
@@ -2037,6 +2457,7 @@
         state.browse.ts = null;
         state.browse.stageFilter = "";
         renderBrowse();
+        syncUrlState(true);
         return;
       }
       const bbtn = e.target.closest("[data-bmode]");
@@ -2047,11 +2468,13 @@
         state.browse.ma = null;
         state.browse.stageFilter = "";
         renderBrowse();
+        syncUrlState(true);
         return;
       }
       if (e.target.id === "toggleCrossParshaBtn") {
         state.browse.includeParshaBooks = !state.browse.includeParshaBooks;
         renderBrowse();
+        syncUrlState(true);
       }
     });
     el.stageFilterInput.addEventListener("input", () => {
@@ -2082,7 +2505,7 @@
           state.browse.sec = null;
         }
         renderBrowse();
-        syncUrlHash(true);
+        syncUrlState(true);
         const browseFocusNode = el.breadcrumbBar && !el.breadcrumbBar.classList.contains("hidden")
           ? el.breadcrumbBar
           : el.browseStepTitle;
@@ -2092,10 +2515,9 @@
       if (e.target.id === "browseResetFiltersBtn") {
         state.browse.lang = "all";
         state.browse.fmt = "all";
-        el.browseLangPills.querySelectorAll(".mini-pill").forEach((b) => b.classList.toggle("active", b.dataset.blang === "all"));
-        el.browseFmtPills.querySelectorAll(".mini-pill").forEach((b) => b.classList.toggle("active", b.dataset.bfmt === "all"));
         updateBrowseFiltersSummary();
         renderBrowse();
+        syncUrlState(true);
       }
     });
 
@@ -2106,6 +2528,7 @@
         state.filters.yearMode = ym.dataset.ym;
         el.filtersSidebar.querySelectorAll(".ym-btn").forEach((b) => b.classList.toggle("active", b === ym));
         renderSidebarFacets();
+        syncUrlState(false);
         return;
       }
       const opt = e.target.closest(".filter-opt-btn");
@@ -2117,7 +2540,7 @@
       else if (k === "book") { state.filters.book = v; state.filters.vol = "all"; state.filters.sec = "all"; }
       else if (k === "vol") { state.filters.vol = v; state.filters.sec = "all"; }
       else state.filters[k] = v;
-      applyCatalogFilters(true);
+      applyCatalogFilters(true, "push");
     });
 
     const resetCatalogAll = () => {
@@ -2125,7 +2548,7 @@
       el.searchInput.value = "";
       el.clearSearchBtn.classList.add("hidden");
       el.sortSelect.value = "default";
-      applyCatalogFilters(true);
+      applyCatalogFilters(true, "push");
     };
     el.clearAllFiltersBtn.addEventListener("click", resetCatalogAll);
     el.emptyResetBtn.addEventListener("click", resetCatalogAll);
@@ -2141,7 +2564,7 @@
       else if (k === "book") { state.filters.book = "all"; state.filters.vol = "all"; state.filters.sec = "all"; }
       else if (k === "vol") { state.filters.vol = "all"; state.filters.sec = "all"; }
       else state.filters[k] = "all";
-      applyCatalogFilters(true);
+      applyCatalogFilters(true, "push");
     });
 
     document.querySelectorAll(".vm-btn").forEach((btn) => btn.addEventListener("click", () => {
@@ -2149,11 +2572,12 @@
       document.querySelectorAll(".vm-btn").forEach((b) => b.classList.toggle("active", b === btn));
       state.page = 1;
       renderCatalog();
+      syncUrlState(true);
     }));
 
     el.sortSelect.addEventListener("change", () => {
       state.filters.sort = el.sortSelect.value;
-      applyCatalogFilters(true);
+      applyCatalogFilters(true, "push");
     });
 
     el.paginationBar.addEventListener("click", (e) => {
@@ -2161,6 +2585,7 @@
       if (!btn || btn.disabled) return;
       state.page = Number(btn.dataset.page);
       renderCatalog();
+      syncUrlState(true);
       scrollToRelevantContent(el.resultsList);
     });
 
@@ -2182,6 +2607,7 @@
       state.pdfLang = btn.dataset.pdflang;
       el.pdfLangFilterPills.querySelectorAll(".pill-filter").forEach((b) => b.classList.toggle("active", b === btn));
       renderSeforimPdfView();
+      syncUrlState(true);
     });
     el.clearHistoryBtn.addEventListener("click", () => {
       state.history = [];
@@ -2233,8 +2659,8 @@
       const tr = ITEMS_BY_ID.get(btn.dataset.mplId);
       if (tr) openMediaModal(tr, btn.dataset.mplMode, btn.dataset.mplGid);
     });
-    el.closeModalBtn.addEventListener("click", closeMediaModal);
-    el.mediaModal.addEventListener("click", (e) => { if (e.target === el.mediaModal) closeMediaModal(); });
+    el.closeModalBtn.addEventListener("click", () => closeMediaModal(false));
+    el.mediaModal.addEventListener("click", (e) => { if (e.target === el.mediaModal) closeMediaModal(false); });
   }
 
   // =========================================================================
@@ -2273,9 +2699,10 @@
   // =========================================================================
   function init() {
     applyTheme(state.theme);
-    const pdfCount = ITEMS.filter((it) => (it.f || []).includes("pdf")).length;
-    el.headerSubStats.textContent = `הגה"ח רבי יואל כהן ע"ה • ${ITEMS.length.toLocaleString("he-IL")} שיעורים • ${(META.multiSeriesCount || 0).toLocaleString("he-IL")} סדרות ברצף`;
-    el.navTotalCount.textContent = ITEMS.length.toLocaleString("he-IL");
+    const totalCount = META.totalCount || ITEMS.length;
+    const pdfCount = META.pdfCount || ITEMS.filter((it) => (it.f || []).includes("pdf")).length;
+    el.headerSubStats.textContent = `הגה"ח רבי יואל כהן ע"ה • ${totalCount.toLocaleString("he-IL")} שיעורים • ${(META.multiSeriesCount || 0).toLocaleString("he-IL")} סדרות ברצף`;
+    el.navTotalCount.textContent = totalCount.toLocaleString("he-IL");
     el.navPdfCount.textContent = pdfCount.toLocaleString("he-IL");
     el.navSavedCount.textContent = state.bookmarks.size.toLocaleString("he-IL");
     el.playerSpeedBtn.textContent = `${state.speeds[state.speedIdx]}x`;
@@ -2288,9 +2715,13 @@
     bindEvents();
     bindCommunityEvents();
     renderResumeBanner();
-    if (window.location.hash && window.location.hash.length > 1) applyHashFromLocation();
-    else renderBrowse();
-    window.addEventListener("hashchange", applyHashFromLocation);
+    if ((window.location.search && window.location.search.length > 1) || (window.location.hash && window.location.hash.length > 1)) {
+      applyStateFromLocation();
+    } else {
+      renderBrowse();
+    }
+    window.addEventListener("popstate", applyStateFromLocation);
+    window.addEventListener("hashchange", applyStateFromLocation);
   }
 
   init();
