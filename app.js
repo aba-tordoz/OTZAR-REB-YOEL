@@ -2002,7 +2002,7 @@
   }
 
   function renderFeedbackView() {
-    renderGoogleFormMount($("fbGoogleFormMount"), SITE_CFG.googleFormFeedbackUrl, "טופס יצירת קשר ופידבק");
+    renderGoogleFormMount($("fbGoogleFormMount"), SITE_CFG.googleFormFeedbackUrl, "טופס יצירת קשר ומשוב");
   }
 
   function bindCommunityEvents() {

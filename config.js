@@ -1,4 +1,4 @@
-// הגדרות שליחת פידבק ומאגרים חדשים (Google Forms / GitHub Issues / Formspree / Mailto)
+// הגדרות שליחת משוב ומאגרים חדשים (Google Forms)
 window.SITE_CONFIG = {
   // === חיבור ל-Google Forms ===
   googleFormArchiveUrl: "https://docs.google.com/forms/d/e/1FAIpQLScZ0IVt_MWUawZfiu9mMx3hKrIHRxEgH6WhH32edRyrW0fHng/viewform",

@@ -16,5 +16,5 @@
 3. **Cloudflare Pages (חינמי עם רוחב פס ללא הגבלה):**
    - הרץ `npx wrangler pages deploy dist --project-name=reb-yoel-archive` והתחבר בחלון הדפדפן שייפתח.
 
-## חיבור Google Form לשליחת פידבק ומאגרים
+## חיבור Google Form לשליחת משוב ומאגרים
 פתח את הקובץ `config.js` והדבק את הקישור ל-Google Form שיצרת ב-`googleFormArchiveUrl` ו-`googleFormFeedbackUrl`.
