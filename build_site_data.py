@@ -249,8 +249,8 @@ CAT_INFO = {
     "ספרים": {
         "icon": "📚",
         "title": "ספרים (ספרי רבותינו נשיאינו)",
-        "desc": "דפדוף לפי רבי ← ספר ← חלק / פרק ← שיחה / מאמר ← סדרת שיעורים ברצף",
-        "nextLabel": "רבי",
+        "desc": "דפדוף לפי אדמו\"ר ← ספר ← חלק / פרק ← שיחה / מאמר ← סדרת שיעורים ברצף",
+        "nextLabel": "אדמו\"ר",
     },
     "פרשיות השבוע": {
         "icon": "📖",
@@ -273,7 +273,7 @@ CAT_INFO = {
     "סוגיות בחסידות": {
         "icon": "💡",
         "title": "סוגיות ומושגים בחסידות",
-        "desc": "שיעורי עומק ביסודות החסידות, אחדות ה', אורייתא, גאולה ומשיח ובמשנת רבינו",
+        "desc": "שיעורי עומק ביסודות החסידות, י\"ג עיקרים, אחדות ה', גאולה ומשיח ובמשנת רבינו",
         "nextLabel": "מדור / סדרה",
     },
     "ניגונים": {
@@ -290,44 +290,50 @@ CAT_INFO = {
     },
 }
 
+REBBE_ZAKEN = 'כ"ק אדמו"ר הזקן'
+REBBE_ZZ = 'כ"ק אדמו"ר הצמח צדק'
+REBBE_RASHAB = 'כ"ק אדמו"ר הרש"ב'
+REBBE_RAYYATZ = 'כ"ק אדמו"ר מוהריי"צ'
+REBBE_LUBAVITCH = 'כ"ק אדמו"ר'
+
 REBBE_ORDER = [
-    'אדמו"ר הזקן',
-    'אדמו"ר הצמח צדק',
-    'אדמו"ר הרש"ב',
-    'אדמו"ר הריי"צ',
-    'כ"ק אדמו"ר זי"ע',
+    REBBE_ZAKEN,
+    REBBE_ZZ,
+    REBBE_RASHAB,
+    REBBE_RAYYATZ,
+    REBBE_LUBAVITCH,
 ]
 
 REBBE_INFO = {
-    'אדמו"ר הזקן': {
-        "title": 'כ"ק אדמו"ר הזקן',
+    REBBE_ZAKEN: {
+        "title": REBBE_ZAKEN,
         "sub": "בעל התניא והשו\"ע",
         "desc": "תניא על כל חלקיו (ליקוטי אמרים, שעהיוה\"א, אגרת התשובה, אגרת הקודש), תורה אור ולקוטי תורה",
     },
-    'אדמו"ר הצמח צדק': {
-        "title": 'כ"ק אדמו"ר הצמח צדק',
+    REBBE_ZZ: {
+        "title": REBBE_ZZ,
         "sub": "בעל הדרך מצותיך",
         "desc": "סדרות שיעורים מפורטות בספר דרך מצוותיך לפי מצוות",
     },
-    'אדמו"ר הרש"ב': {
-        "title": 'כ"ק אדמו"ר הרש"ב',
+    REBBE_RASHAB: {
+        "title": REBBE_RASHAB,
         "sub": "בעל המשך תרס\"ו והמשך תער\"ב",
         "desc": "המשך תרס\"ו (ס\"ו), המשך תער\"ב (ע\"ב), ספרי המאמרים (תרמ\"ג–עטר\"ת) וקונטרסים",
     },
-    'אדמו"ר הריי"צ': {
-        "title": 'כ"ק אדמו"ר הריי"צ',
-        "sub": "כ\"ק אדמו\"ר מוהריי\"צ",
+    REBBE_RAYYATZ: {
+        "title": REBBE_RAYYATZ,
+        "sub": "ספרי המאמרים, באתי לגני וקונטרסים",
         "desc": "ספרי המאמרים (תרפ\"ה–תש\"י), מאמרי באתי לגני וקונטרסים",
     },
-    'כ"ק אדמו"ר זי"ע': {
-        "title": 'כ"ק אדמו"ר זי"ע',
+    REBBE_LUBAVITCH: {
+        "title": REBBE_LUBAVITCH,
         "sub": "הרבי מליובאוויטש",
         "desc": "ליקוטי שיחות, ספר המאמרים מלוקט, מאמרים בלתי מוגה, קונטרסים, הדרנים, ספר השיחות ורשימות",
     },
 }
 
 BOOKS_BY_REBBE = {
-    'אדמו"ר הזקן': [
+    REBBE_ZAKEN: [
         'תניא — לקוטי אמרים',
         'תניא — שער היחוד והאמונה',
         'תניא — אגרת התשובה',
@@ -335,18 +341,18 @@ BOOKS_BY_REBBE = {
         'תורה אור',
         'לקוטי תורה',
     ],
-    'אדמו"ר הצמח צדק': [
+    REBBE_ZZ: [
         'דרך מצותיך',
     ],
-    'אדמו"ר הרש"ב': [
+    REBBE_RASHAB: [
         'המשך תרס"ו (ס"ו)',
         'המשך תער"ב (ע"ב)',
         'ספרי המאמרים וקונטרסים',
     ],
-    'אדמו"ר הריי"צ': [
+    REBBE_RAYYATZ: [
         'ספרי המאמרים וקונטרסים',
     ],
-    'כ"ק אדמו"ר זי"ע': [
+    REBBE_LUBAVITCH: [
         'ליקוטי שיחות',
         'ספר המאמרים מלוקט',
         'מאמרים (בלתי מוגה ותורת מנחם)',
@@ -357,13 +363,13 @@ BOOKS_BY_REBBE = {
 }
 
 BOOK_INFO = {
-    'תניא — לקוטי אמרים': ("פרק בתניא", "סדרה / שיעור", "חלק ראשון של ספר התניא (שער עד פרק נ\"ג) באידיש ובעברית"),
+    'תניא — לקוטי אמרים': ("פרק בתניא", "סדרה / שיעור", "ספר של בינונים — חלק ראשון של ספר התניא (שער עד פרק נ\"ג) באידיש ובעברית"),
     'תניא — שער היחוד והאמונה': ("פרק", "סדרה", "ביאורי אמונה, אחדות ה' וצמצום — לפי פרקים"),
     'תניא — אגרת התשובה': ("פרק", "סדרה", "מהות התשובה עילאה ותתאה — לפי פרקים"),
     'תניא — אגרת הקודש וקונטרס אחרון': ("סימן / פרק", "סדרה", "איגרות הקודש וביאורי קונטרס אחרון"),
     'תורה אור': ("חומש / שער", "פרשה ומאמר ד\"ה", "מאמרי בראשית, שמות, חנוכה ופורים"),
     'לקוטי תורה': ("חומש / שער", "פרשה ומאמר ד\"ה", "מאמרי ויקרא, במדבר, דברים, מועדים ושיר השירים"),
-    'דרך מצותיך': ("מצוה", "סדרת שיעורים", "טעמי המצוות על דרך החסידות מאת הצמח צדק"),
+    'דרך מצותיך': ("מצוה", "סדרת שיעורים", "טעמי המצוות על דרך החסידות מאת כ\"ק אדמו\"ר הצמח צדק"),
     'המשך תרס"ו (ס"ו)': ("מאמר / סעיף", "פרטי המאמר", 'ההמשך המפורסם "יו"ד שבט תרס"ו — יום הששי"'),
     'המשך תער"ב (ע"ב)': ("סימן / מאמר", "פרטי המאמר", 'המשך "בשעה שהקדימו תער"ב"'),
     'ספרי המאמרים וקונטרסים': ("ספר המאמרים (שנה)", "מאמר ד\"ה", "ספרי המאמרים לפי שנים וקונטרסים"),
@@ -385,6 +391,22 @@ CHUMASH_ORD = {"ספר בראשית": 1, "ספר שמות": 2, "ספר ויקר�
 def normalize_ls_chelek(raw):
     c = canon_heb_num(raw)
     return f"חלק {c}" if c else raw
+
+def extract_ls_chelek_from_text(text):
+    """Extract normalized Likkutei Sichos chelek ('חלק ט', 'חלק י\"ט', etc.) from text, normalizing Unicode curly quotes."""
+    if not text:
+        return ""
+    norm = text.replace("״", '"').replace("”", '"').replace("׳", "'").replace("’", "'")
+    m = re.search(
+        r'(?:לקו"ש|לקוטי\s+שיחות|ליקוטי\s+שיחות)\s*,?\s*(?:חלק|כרך|ח(?!\s+שיח))\s*["\']?\s*([א-ת]{1,2}(?:["\'][א-ת])?|[א-ת]|\d{1,2})["\']?(?=\s|,|;|$|[-–.])',
+        norm,
+    )
+    if not m:
+        return ""
+    val = m.group(1)
+    if val.isdigit():
+        return normalize_ls_chelek(num_to_heb_letters(int(val)))
+    return normalize_ls_chelek(val)
 
 def clean_tanya_perek(raw_seg):
     s = (raw_seg or "").strip()
@@ -649,7 +671,7 @@ def build():
             raw_r = p[1]
             raw_b = p[2]
             if raw_r == 'אדמו"ר הזקן':
-                r = 'אדמו"ר הזקן'
+                r = REBBE_ZAKEN
                 if raw_b == "תניא":
                     sub_tanya = p[3] if len(p) > 3 else ""
                     if "שער היחוד" in sub_tanya:
@@ -686,7 +708,7 @@ def build():
                     gid_key = f"ha_tolt_{' > '.join(p)}_{tape_code}"
 
             elif raw_r == 'אדמו"ר צמח צדק':
-                r = 'אדמו"ר הצמח צדק'
+                r = REBBE_ZZ
                 b = 'דרך מצותיך'
                 v = p[3] if len(p) > 3 else "כללי"
                 raw_ser = next((seg for seg in p if "Series" in seg or "סדרה" in seg), "")
@@ -696,7 +718,7 @@ def build():
                 gid_key = f"ha_zz_{v}_{raw_ser or tape_code}"
 
             elif raw_r == 'אדמו"ר הרש"ב':
-                r = 'אדמו"ר הרש"ב'
+                r = REBBE_RASHAB
                 if 'תרס"ו' in raw_b:
                     b = 'המשך תרס"ו (ס"ו)'
                     v = p[3] if len(p) > 3 else title
@@ -712,14 +734,14 @@ def build():
                 gid_key = f"ha_rsb_{b}_{v}_{sec}_{tape_code}"
 
             elif raw_r == 'אדמו"ר הריי"צ':
-                r = 'אדמו"ר הריי"צ'
+                r = REBBE_RAYYATZ
                 b = 'ספרי המאמרים וקונטרסים'
                 v = raw_b
                 sec = p[3] if len(p) > 3 else title
                 gid_key = f"ha_ryy_{v}_{sec}_{tape_code}"
 
             elif raw_r == 'אדמו"ר זי"ע':
-                r = 'כ"ק אדמו"ר זי"ע'
+                r = REBBE_LUBAVITCH
                 if raw_b == 'לקוטי שיחות':
                     b = 'ליקוטי שיחות'
                     hlk = [x for x in paths if "לקוטי שיחות" in x and "חלקים" in x]
@@ -881,7 +903,7 @@ def build():
             gid_key = f"pod_chz_{ep['idx']}"
             sub = "חזרה של ר' יואל מהתוועדות הרבי"
         elif src == "podcast_tanya":
-            cat, r, b = "ספרים", 'אדמו"ר הזקן', 'תניא — לקוטי אמרים'
+            cat, r, b = "ספרים", REBBE_ZAKEN, 'תניא — לקוטי אמרים'
             langs = ["he"]
             perek = clean_tanya_perek(title)
             v = perek if ("פרק" in perek or "שער" in perek or "הקדמה" in perek) else "כללי"
@@ -907,12 +929,17 @@ def build():
             stem = strip_part_for_series_stem(title)
             low_all = (title + " " + desc).lower()
             if "tanya" in low_all or "תניא" in low_all:
-                cat, r, b = "ספרים", 'אדמו"ר הזקן', 'תניא — לקוטי אמרים'
+                cat, r, b = "ספרים", REBBE_ZAKEN, 'תניא — לקוטי אמרים'
                 v = clean_tanya_perek(title) or "שיעורים כלליים"
                 ts = "Study Chassidus (אנגלית)"
-            elif "basi legani" in low_all or "zeh hayom" in low_all or "veavdi" in low_all:
-                cat, r, b = "ספרים", 'כ"ק אדמו"ר זי"ע', 'ספר המאמרים מלוקט'
-                v = "לפי מועדי השנה"
+            elif "haumnom" in low_all:
+                cat, r, b = "ספרים", REBBE_RASHAB, 'ספרי המאמרים וקונטרסים'
+                v = 'ספר המאמרים תרמ"ג'
+            elif any(k in low_all for k in ["basi legani", "zeh hayom", "veavdi", "vechozakta", "vechozokto"]):
+                cat, r, b = "ספרים", REBBE_LUBAVITCH, 'ספר המאמרים מלוקט'
+                v = "לפי מועדי השנה" if ("basi legani" in low_all or "zeh hayom" in low_all) else "מאמרים מלוקטים — כללי"
+            elif "chanukah" in low_all:
+                cat, b, v = "ענינא דיומא", "כסלו", "חנוכה"
             else:
                 cat, b = "סוגיות בחסידות", "מושגים וסוגיות בחסידות"
                 v = stem
@@ -952,7 +979,7 @@ def build():
         cat, r, b, vol, sec, ts = "", "", "", "כללי", stem, ""
 
         if "תניא" in blob or "ספר של בינונים" in blob or "שער היחוד" in blob or "אגרת התשובה" in blob or "אגרת הקודש" in blob:
-            cat, r = "ספרים", 'אדמו"ר הזקן'
+            cat, r = "ספרים", REBBE_ZAKEN
             if "שער היחוד" in blob: b = 'תניא — שער היחוד והאמונה'
             elif "אגרת התשובה" in blob: b = 'תניא — אגרת התשובה'
             elif "אגרת הקודש" in blob: b = 'תניא — אגרת הקודש וקונטרס אחרון'
@@ -962,36 +989,35 @@ def build():
             ts = "וידאו חסידות.נט"
             sec = ts
         elif "תורה אור" in blob:
-            cat, r, b = "ספרים", 'אדמו"ר הזקן', 'תורה אור'
+            cat, r, b = "ספרים", REBBE_ZAKEN, 'תורה אור'
             vol = PARSHA_TO_CHUMASH.get(parsha, "חנוכה ופורים" if parsha in ("חנוכה", "פורים") else "כללי")
             sec = stem
         elif "לקוטי תורה" in blob or "ליקוטי תורה" in blob:
-            cat, r, b = "ספרים", 'אדמו"ר הזקן', 'לקוטי תורה'
+            cat, r, b = "ספרים", REBBE_ZAKEN, 'לקוטי תורה'
             vol = PARSHA_TO_CHUMASH.get(parsha, "ימים טובים — מועדים")
             sec = stem
         elif 'תרס"ו' in blob or 'ס"ו' in blob:
-            cat, r, b = "ספרים", 'אדמו"ר הרש"ב', 'המשך תרס"ו (ס"ו)'
+            cat, r, b = "ספרים", REBBE_RASHAB, 'המשך תרס"ו (ס"ו)'
             vol = stem
         elif 'תער"ב' in blob or 'ע"ב' in blob:
-            cat, r, b = "ספרים", 'אדמו"ר הרש"ב', 'המשך תער"ב (ע"ב)'
+            cat, r, b = "ספרים", REBBE_RASHAB, 'המשך תער"ב (ע"ב)'
             vol = stem
         elif 'רש"ב' in blob:
-            cat, r, b = "ספרים", 'אדמו"ר הרש"ב', 'ספרי המאמרים וקונטרסים'
+            cat, r, b = "ספרים", REBBE_RASHAB, 'ספרי המאמרים וקונטרסים'
             vol = years[0] if years else "מאמרים"
         elif 'ריי"צ' in blob:
-            cat, r, b = "ספרים", 'אדמו"ר הריי"צ', 'ספרי המאמרים וקונטרסים'
+            cat, r, b = "ספרים", REBBE_RAYYATZ, 'ספרי המאמרים וקונטרסים'
             vol = years[0] if years else "מאמרים"
-        elif "לקוטי שיחות" in blob or "ליקוטי שיחות" in blob or 'לקו"ש' in blob or "הדרן" in blob:
-            cat, r = "ספרים", 'כ"ק אדמו"ר זי"ע'
+        elif "לקוטי שיחות" in blob or "ליקוטי שיחות" in blob or 'לקו"ש' in blob or "לקו”ש" in blob or "הדרן" in blob:
+            cat, r = "ספרים", REBBE_LUBAVITCH
             if "הדרן" in blob:
                 b = 'הדרנים'
                 vol = "הדרנים על הרמב\"ם" if "רמב" in blob else "הדרנים"
             else:
                 b = 'ליקוטי שיחות'
-                m_ls = re.search(r'(?:לקו"ש|לקוטי שיחות|ליקוטי שיחות)\s*(?:חלק|ח["\'״׳]?)\s*([א-ת"\'״׳]{1,4})', blob)
-                vol = normalize_ls_chelek(m_ls.group(1)) if m_ls else (PARSHA_TO_CHUMASH.get(parsha, "שיחות שונות"))
+                vol = extract_ls_chelek_from_text(blob) or PARSHA_TO_CHUMASH.get(parsha, "שיחות שונות")
         elif "מאמר" in title or "ד\"ה" in title or "דה " in title:
-            cat, r, b = "ספרים", 'כ"ק אדמו"ר זי"ע', 'ספר המאמרים מלוקט'
+            cat, r, b = "ספרים", REBBE_LUBAVITCH, 'ספר המאמרים מלוקט'
             vol = years[0] if years else (PARSHA_TO_CHUMASH.get(parsha, "מאמרים"))
         elif "התוועדות" in blob:
             cat, b = "חזרות והתוועדויות", "התוועדויות חסידים וזיכרונות"
@@ -1045,10 +1071,10 @@ def build():
         years, yn, decs = extract_years(title, ma.get("slug", ""), ma.get("hint", ""))
         parsha = detect_parsha_or_holiday(title, ma.get("slug", ""), ma.get("hint", ""))
 
-        if mekor and ("לקו\"ש" in mekor or "לקוטי שיחות" in mekor or "ליקוטי שיחות" in mekor):
-            cat, r, b = "ספרים", 'כ"ק אדמו"ר זי"ע', 'ליקוטי שיחות'
-            m_ls = re.search(r'(?:לקו"ש|לקוטי שיחות|ליקוטי שיחות)\s*(?:חלק|ח["\'״׳]?)\s*([א-ת"\'״׳]{1,4})', mekor)
-            vol = normalize_ls_chelek(m_ls.group(1)) if m_ls else "שיחות לפי פרשה / מועד"
+        norm_mekor = mekor.replace("״", '"').replace("”", '"').replace("׳", "'").replace("’", "'")
+        if norm_mekor and ('לקו"ש' in norm_mekor or "לקוטי שיחות" in norm_mekor or "ליקוטי שיחות" in norm_mekor):
+            cat, r, b = "ספרים", REBBE_LUBAVITCH, 'ליקוטי שיחות'
+            vol = extract_ls_chelek_from_text(norm_mekor) or "שיחות לפי פרשה / מועד"
             sec = parsha or title
         elif parsha and parsha in PARSHA_TO_CHUMASH:
             cat, r, b, vol, sec = "פרשיות השבוע", "", PARSHA_TO_CHUMASH[parsha], parsha, title
@@ -1078,10 +1104,10 @@ def build():
         years, yn, decs = extract_years(title, m.get("slug", ""))
         parsha = detect_parsha_or_holiday(title, m.get("slug", ""))
         cat, r, b, vol, sec = "סוגיות בחסידות", "", "מושגים וסוגיות בחסידות", "שונות", title
-        if mekor and ("לקו\"ש" in mekor or "לקוטי שיחות" in mekor or "ליקוטי שיחות" in mekor):
-            cat, r, b = "ספרים", 'כ"ק אדמו"ר זי"ע', 'ליקוטי שיחות'
-            m_ls = re.search(r'(?:לקו"ש|לקוטי שיחות|ליקוטי שיחות)\s*(?:חלק|ח["\'״׳]?)\s*([א-ת"\'״׳]{1,4})', mekor)
-            vol = normalize_ls_chelek(m_ls.group(1)) if m_ls else "שיחות לפי פרשה / מועד"
+        norm_mekor = mekor.replace("״", '"').replace("”", '"').replace("׳", "'").replace("’", "'")
+        if norm_mekor and ('לקו"ש' in norm_mekor or "לקוטי שיחות" in norm_mekor or "ליקוטי שיחות" in norm_mekor):
+            cat, r, b = "ספרים", REBBE_LUBAVITCH, 'ליקוטי שיחות'
+            vol = extract_ls_chelek_from_text(norm_mekor) or "שיחות לפי פרשה / מועד"
             sec = parsha or title
         elif parsha and parsha in PARSHA_TO_CHUMASH:
             cat, b, vol, sec = "פרשיות השבוע", PARSHA_TO_CHUMASH[parsha], parsha, title
@@ -1113,38 +1139,65 @@ def build():
         parsha = detect_parsha_or_holiday(slug, heb_name)
         yr_he = f" - {years[0]}" if years else ""
         display_name = heb_name if heb_name else pretty_slug
-        title = f"מאמר ד\"ה {display_name}{yr_he} — " + ("דפי לימוד וביאור (PDF)" if is_pdf else "שיעור שמע")
+        title = f"מאמר ד\"ה {display_name}{yr_he} — " + ("דפי לימוד וביאור (PDF)" if is_pdf else "דף המאמר (PDF) וקישור לשיעור")
         if is_pdf:
             cat, r, b, vol, sec = "ספרים וכתבים (PDF)", "", "דפי מאמרים מלוקט (Project Melukat PDF)", "דפי לימוד וביאור", f"{display_name}{yr_he}"
         else:
-            cat, r, b, vol, sec = "ספרים", 'כ"ק אדמו"ר זי"ע', 'ספר המאמרים מלוקט', "מאמרים מלוקטים — כללי", f"{display_name}{yr_he}"
+            cat, r, b, vol, sec = "ספרים", REBBE_LUBAVITCH, 'ספר המאמרים מלוקט', "מאמרים מלוקטים — כללי", f"{display_name}{yr_he}"
         unified.append({
             "id": f"pm_{idx}", "t": title,
             "cat": cat, "r": r, "b": b, "v": vol, "sec": sec,
             "ser": "Project Melukat", "ts": "", "gid": f"pm_{idx}", "ord": 10,
-            "sub": f"ספר המאמרים מלוקט • {pretty_slug}",
-            "l": ["he"] if is_pdf else ["yi"], "f": ["pdf"] if is_pdf else ["audio"],
+            "sub": f"ספר המאמרים מלוקט (Project Melukat — דף המאמר וקישור לשיעור) • {pretty_slug}",
+            "l": ["he"] if is_pdf else ["he", "yi"], "f": ["pdf"] if drive_preview else [],
             "y": years, "yn": yn, "decs": decs, "p": parsha, "d": 0, "src": "melukat",
-            "pd": drive_preview if is_pdf else "", "dr": drive_preview if (not is_pdf and drive_preview) else "",
+            "pd": drive_preview, "dr": "",
             "vi": "", "au": "", "pg": pm["url"],
         })
 
     # --------------------------------------------------------------------------
     # 6. YOUTUBE & SINUN770
     # --------------------------------------------------------------------------
+    YT_MELUKAT_MAAMARIM = [
+        ("pada beshalom", 'פדה בשלום (תשכ"ו)', "חלק ו'"),
+        ("venacha alav", 'ונחה עליו (תשכ"ה)', "חלק ב'"),
+        ("bachodesh hashlishi", 'בחודש השלישי (תשכ"ט)', "חלק ד'"),
+        ("balaila hahu", 'בלילה ההוא (תשכ"ה)', "חלק ד'"),
+        ("gadol ihie", 'גדול יהיה כבוד הבית (תשכ"ב)', "חלק ד'"),
+        ("baruch sheasa", 'ברוך שעשה נסים (תשט"ו)', "חלק ה'"),
+        ("patach eliahu", 'פתח אליהו (תשט"ו)', "חלק ה'"),
+        ("lehavin inyan nerot", 'להבין ענין נרות חנוכה (תשכ"ו)', "חלק ו'"),
+        ("margela bepumei", 'מרגלא בפומיה (תש"מ)', "מאמרים מלוקטים — כללי"),
+        ("vele pikudei", 'ואלה פקודי', "מאמרים מלוקטים — כללי"),
+        ("beyom ashtei asar", 'ביום עשתי עשר (תשל"א)', "חלק ג'"),
+        ("vedavid avdi", 'ודויד עבדי (תשל"ב)', "חלק ו'"),
+        ("bati legani", 'באתי לגני (תשל"ב)', "חלק ו'"),
+        ("rani vessimcha", 'רוני ושמחי (תשכ"ז)', "חלק ד'"),
+    ]
     yts = json.load(open(os.path.join(CACHE_DIR, "youtube.json"), encoding="utf-8"))
     for yt in yts:
         title = yt["title"]
         series = yt.get("series", "")
         blob = f"{title} {series}"
+        low_blob = blob.lower()
         years, yn, decs = extract_years(title, series)
         parsha = detect_parsha_or_holiday(title)
         stem = strip_part_for_series_stem(title)
-        if "תניא" in blob or "tanya" in blob.lower():
-            cat, r, b = "ספרים", 'אדמו"ר הזקן', 'תניא — לקוטי אמרים'
+        gid_key = f"yt_{stem}"
+        mlk_hit = next((m for m in YT_MELUKAT_MAAMARIM if m[0] in low_blob), None)
+        if "תניא" in blob or "tanya" in low_blob:
+            cat, r, b = "ספרים", REBBE_ZAKEN, 'תניא — לקוטי אמרים'
             vol = clean_tanya_perek(blob) or "כללי"
             sec, ts = "יוטיוב", "סדרת יוטיוב"
-        elif "התוועדות" in blob or "farbrengen" in blob.lower():
+        elif "לקוטי תורה" in blob or "ליקוטי תורה" in blob:
+            cat, r, b, vol, sec, ts = "ספרים", REBBE_ZAKEN, 'לקוטי תורה', 'שיר השירים / אלול', 'אני לדודי', ""
+        elif "ayen bet" in low_blob:
+            cat, r, b, vol, sec, ts = "ספרים", REBBE_RASHAB, 'המשך תער"ב (ע"ב)', 'כללי (ע"ב)', stem, ""
+        elif mlk_hit:
+            _, ma_sec, ma_vol = mlk_hit
+            cat, r, b, vol, sec, ts = "ספרים", REBBE_LUBAVITCH, 'ספר המאמרים מלוקט', ma_vol, ma_sec, ""
+            gid_key = f"yt_mlk_{ma_sec}"
+        elif "התוועדות" in blob or "התועדות" in blob or "farbrengen" in low_blob:
             cat, r, b, vol, sec, ts = "חזרות והתוועדויות", "", "התוועדויות חסידים וזיכרונות", years[0] if years else "כללי", stem, ""
         elif parsha and parsha in PARSHA_TO_CHUMASH:
             cat, r, b, vol, sec, ts = "פרשיות השבוע", "", PARSHA_TO_CHUMASH[parsha], parsha, stem, ""
@@ -1156,7 +1209,7 @@ def build():
             "id": f"yt_{yt['videoId']}", "t": title,
             "cat": cat, "r": r, "b": b, "v": vol, "sec": sec,
             "ser": series or "יוטיוב / סינון 770", "ts": ts,
-            "gid": f"yt_{stem}", "ord": extract_part_order(title),
+            "gid": gid_key, "ord": extract_part_order(title),
             "sub": series, "l": [yt.get("lang", "yi")], "f": ["video"],
             "y": years, "yn": yn, "decs": decs, "p": parsha, "d": 0, "src": "youtube",
             "vi": f"yt:{yt['videoId']}", "pg": yt.get("sinunUrl") or yt["url"],
@@ -1181,15 +1234,19 @@ def build():
         stem = strip_part_for_series_stem(title)
         blob = f"{title} {lit_vals}"
         if "מלוקט" in blob:
-            cat, r, b = "ספרים", 'כ"ק אדמו"ר זי"ע', 'ספר המאמרים מלוקט'
+            cat, r, b = "ספרים", REBBE_LUBAVITCH, 'ספר המאמרים מלוקט'
             vol = "לפי מועדי השנה" if not parsha else PARSHA_TO_CHUMASH.get(parsha, "כללי")
             sec = stem
+        elif "קונטרס" in blob:
+            cat, r, b, vol, sec = "ספרים", REBBE_LUBAVITCH, "קונטרסים", "קונטרס ענינה של תורת החסידות", "קונטרס ענינה של תורת החסידות"
         elif "תניא" in blob:
-            cat, r, b, vol, sec = "ספרים", 'אדמו"ר הזקן', 'תניא — לקוטי אמרים', clean_tanya_perek(blob) or "כללי", "אוצר החסידות"
+            cat, r, b, vol, sec = "ספרים", REBBE_ZAKEN, 'תניא — לקוטי אמרים', clean_tanya_perek(blob) or "כללי", "אוצר החסידות"
         elif "רש\"ב" in blob or 'תרס"ו' in blob or 'תער"ב' in blob:
-            cat, r, b, vol, sec = "ספרים", 'אדמו"ר הרש"ב', 'ספרי המאמרים וקונטרסים', years[0] if years else "מאמרים", stem
+            cat, r, b, vol, sec = "ספרים", REBBE_RASHAB, 'ספרי המאמרים וקונטרסים', years[0] if years else "מאמרים", stem
+        elif "פרשה" in title or (parsha and parsha in PARSHA_TO_CHUMASH):
+            cat, r, b, vol, sec = "פרשיות השבוע", "", PARSHA_TO_CHUMASH.get(parsha, "פרשיות כללי"), parsha or "כללי", stem
         else:
-            cat, r, b, vol, sec = "ספרים", 'כ"ק אדמו"ר זי"ע', 'ספר המאמרים מלוקט', years[0] if years else "כללי", stem
+            cat, r, b, vol, sec = "ספרים", REBBE_LUBAVITCH, 'ספר המאמרים מלוקט', years[0] if years else "כללי", stem
         dur = 0
         if o.get("length"):
             pts = [int(x) for x in o["length"].split(":") if x.isdigit()]
@@ -1287,15 +1344,16 @@ def build():
             gid_key = f"gd_dir_{'/'.join(path)}"
             ord_n = extract_part_order(clean_name)
 
+            doc_title_override = 'וידעת מאסקאווא (תרנ"ז) — הערות' if f["id"] == "1087zR_Xj05ir_tvvwk0xJGSxDZBPJQW8ZX94v87Elfw" else ""
             if is_doc:
                 cat = "ספרים וכתבים (PDF)"
                 if "chazora" in low_blob:
-                    b, vol, sec = "רישומי חזרות (Google Drive)", "רישומי חזרות (Chazora Notes)", clean_name
+                    b, vol, sec = "רישומי חזרות (Google Drive)", "רישומי חזרות (Chazora Notes)", doc_title_override or clean_name
                 else:
-                    b, vol, sec = "כתבים ומסמכים (Google Drive)", "כתבים ומסמכים (010-Text)", clean_name
+                    b, vol, sec = "כתבים ומסמכים (Google Drive)", "כתבים ומסמכים (010-Text)", doc_title_override or clean_name
                 gid_key = f"gd_doc_{f['id']}"
             elif top == "001-alter rebbe":
-                cat, r = "ספרים", 'אדמו"ר הזקן'
+                cat, r = "ספרים", REBBE_ZAKEN
                 p1 = (path[1] if len(path) > 1 else "").lower()
                 if "likutei torah" in p1:
                     b = 'לקוטי תורה'
@@ -1331,13 +1389,13 @@ def build():
                     ser = f"{ts} › {path[3]}" if len(path) > 3 else ts
                     gid_key = f"gd_tn_{'/'.join(path)}_{vol}"
             elif top == "002-Tzemach tzedek":
-                cat, r, b = "ספרים", 'אדמו"ר הצמח צדק', 'דרך מצותיך'
+                cat, r, b = "ספרים", REBBE_ZZ, 'דרך מצותיך'
                 raw_mz = (path[1] if len(path) > 1 else "").lower()
                 vol = GD_TZ_MITZVA_MAP.get(raw_mz, path[1] if len(path) > 1 else "כללי")
                 sec = vol
                 ser = f"Google Drive: {path[-1]}" if len(path) > 2 else "Google Drive"
             elif top == "003-Rebbe rashab":
-                cat, r = "ספרים", 'אדמו"ר הרש"ב'
+                cat, r = "ספרים", REBBE_RASHAB
                 p1 = path[1] if len(path) > 1 else ""
                 if p1 == "5666":
                     b = 'המשך תרס"ו (ס"ו)'
@@ -1360,7 +1418,7 @@ def build():
                     sec = path[2] if len(path) > 2 else vol
                     ser = f"Google Drive: {path[-1]}"
             elif top == "004-Friediker Rebbe":
-                cat, r, b = "ספרים", 'אדמו"ר הריי"צ', 'ספרי המאמרים וקונטרסים'
+                cat, r, b = "ספרים", REBBE_RAYYATZ, 'ספרי המאמרים וקונטרסים'
                 p1 = path[1] if len(path) > 1 else ""
                 if "5686" in p1:
                     vol, sec = 'ספר המאמרים תרפ"ו', "שובה ישראל"
@@ -1378,7 +1436,7 @@ def build():
                     vol, sec = "כללי", clean_name
                 ser = f"Google Drive: {path[-1]}"
             elif top == "005-Rebbe":
-                cat, r = "ספרים", 'כ"ק אדמו"ר זי"ע'
+                cat, r = "ספרים", REBBE_LUBAVITCH
                 p1 = (path[1] if len(path) > 1 else "").lower()
                 if p1 in ("melukot", "kuntrasim"):
                     b = 'ספר המאמרים מלוקט'
@@ -1483,7 +1541,9 @@ def build():
                 cat, b, vol, sec = "סוגיות בחסידות", "מושגים וסוגיות בחסידות", top or "שונות", clean_name
 
             ctx_label = path[-1] if path else ""
-            if len(clean_name) <= 14 or re.match(r'^[\d\sA-Ba-b_-]+$', clean_name):
+            if doc_title_override:
+                disp_title = doc_title_override
+            elif len(clean_name) <= 14 or re.match(r'^[\d\sA-Ba-b_-]+$', clean_name):
                 disp_title = f"{ctx_label} — {clean_name}" if ctx_label else clean_name
             else:
                 disp_title = clean_name
@@ -1746,6 +1806,8 @@ def build():
                     it["mas"] = ['כל המאריך באחד (ת"ש)', "אהללה ה' בחיי (ת\"ש)"]
                 else:
                     it["ma"] = f"{stem} ({vname.replace('ספר המאמרים ', '')})" if "ספר המאמרים " in vname else stem
+            elif src == "podcast_study" and "haumnom" in t.lower():
+                it["ma"] = 'האומנם ישב (תרמ"ג)'
             elif src == "gdrive":
                 lt = t.lower()
                 if "veyada" in lt:

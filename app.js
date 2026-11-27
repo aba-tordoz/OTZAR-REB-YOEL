@@ -547,8 +547,8 @@
     // STAGE 1: Category Selection
     if (!br.cat) {
       el.browseStepKicker.textContent = "שלב 1 — ראשי";
-      el.browseStepTitle.textContent = "מה תרצה ללמוד היום?";
-      el.browseStepSub.textContent = "בחר מדור לימוד ודפדף בקלות עד לסדרת השיעורים הרצויה";
+      el.browseStepTitle.textContent = "בחר מדור לימוד";
+      el.browseStepSub.textContent = "דפדף בקלות לפי מדור, ספר או נושא עד לסדרת השיעורים הרצויה";
 
       const cards = CAT_ORDER.map((cat) => {
         const subset = pool.filter((x) => x.cat === cat);
@@ -573,8 +573,8 @@
     // STAGE 2 in ספרים: Pick Rebbe
     if (br.cat === "ספרים" && !br.r) {
       el.browseStepKicker.textContent = "שלב 2 — ספרי רבותינו נשיאינו";
-      el.browseStepTitle.textContent = "מאיזה רבי?";
-      el.browseStepSub.textContent = "בחר את הרבי מחבר הספר (לאדמו\"ר הזקן עד כ\"ק אדמו\"ר זי\"ע)";
+      el.browseStepTitle.textContent = "ספרי איזה מרבותינו נשיאינו?";
+      el.browseStepSub.textContent = "בחר מרבותינו נשיאינו (מכ\"ק אדמו\"ר הזקן עד כ\"ק אדמו\"ר)";
 
       const cards = REBBE_ORDER.map((rb) => {
         const sub = catPool.filter((x) => x.r === rb);
@@ -623,7 +623,7 @@
             foot: `${serCnt.toLocaleString("he-IL")} סדרות שיעורים`,
           };
         });
-        if (br.r === 'כ"ק אדמו"ר זי"ע') {
+        if (br.r === 'כ"ק אדמו"ר') {
           const chzCnt = pool.filter((x) => x.b === 'חזרות על התוועדויות הרבי').length;
           if (chzCnt) {
             cards.push({
@@ -1193,7 +1193,7 @@
     const showRebbe = f.cat === "all" || f.cat === "ספרים";
     el.filterRebbeGroup.classList.toggle("hidden", !showRebbe);
     el.filterRebbeList.innerHTML =
-      optBtn("rebbe", "all", "כל הרבותינו נשיאינו", rPool.length, f.rebbe) +
+      optBtn("rebbe", "all", "כל רבותינו נשיאינו", rPool.length, f.rebbe) +
       REBBE_ORDER.map((rb) => {
         const cnt = rPool.filter((x) => x.r === rb).length;
         return cnt ? optBtn("rebbe", rb, rb, cnt, f.rebbe) : "";
@@ -1267,7 +1267,7 @@
     if (f.lang !== "all") chips.push(["lang", `שפה: ${LANG_META[f.lang]?.label || f.lang}`]);
     if (f.format !== "all") chips.push(["format", `מדיה: ${FMT_META[f.format]?.label || f.format}`]);
     if (f.cat !== "all") chips.push(["cat", `מדור: ${f.cat}`]);
-    if (f.rebbe !== "all") chips.push(["rebbe", `רבי: ${f.rebbe}`]);
+    if (f.rebbe !== "all") chips.push(["rebbe", `אדמו"ר: ${f.rebbe}`]);
     if (f.book !== "all") chips.push(["book", `ספר: ${f.book}`]);
     if (f.vol !== "all") chips.push(["vol", `חלק: ${f.vol}`]);
     if (f.sec !== "all") chips.push(["sec", `מאמר: ${f.sec}`]);
@@ -1614,7 +1614,7 @@
           </div>
           ${!isWma && it.dr ? `
             <div class="drive-embed-toggle-row">
-              <button type="button" class="btn-ghost btn-sm" id="loadDriveEmbedBtn">🧩 נסה תצוגה מקדימה מוטמעת של Drive כאן (עשוי לדרוש עוגיות Google)</button>
+              <button type="button" class="btn-ghost btn-sm" id="loadDriveEmbedBtn">▶ נסה תצוגה מקדימה של Drive בדף זה (בכפוף להגדרות הדפדפן)</button>
             </div>
             <div id="driveEmbedSlot" class="drive-embed-slot hidden"></div>
           ` : ""}
