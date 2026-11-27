@@ -332,152 +332,26 @@
       </div>
     </section>
 
-    <!-- VIEW 6: SUBMIT ARCHIVE / DRIVE / EXTERNAL REPOSITORY -->
+    <!-- VIEW 6: SUBMIT ARCHIVE (Google Form Only) -->
     <section id="viewSubmitArchive" class="view-section hidden">
       <div class="section-header-row">
         <div>
           <h2 class="section-title">שליחת מאגר שיעורים חדש להוספה</h2>
-          <p class="section-subtitle">האתר מזרים שיעורים ישירות ממקורות חיצוניים (כי העלאת קבצים לשרת מקומי אינה אפשרית כעת). שלח קישור לתיקיית Google Drive, ערוץ או אתר קיים ונחבר אותם לקטלוג!</p>
+          <p class="section-subtitle">מאחר שהאתר מזרים ממקורות קיימים ואינו שומר קבצים מקומית, העלו את הקבצים ל-Google Drive / YouTube / אתר ושלחו את הקישור דרך הטופס הבא:</p>
         </div>
       </div>
-
-      <div class="community-layout">
-        <form id="submitArchiveForm" class="community-form-card" novalidate>
-          <div class="form-info-callout">
-            <strong>💡 כיצד לשתף הקלטות או קבצים שלך?</strong>
-            <span>העלה את הקבצים לחשבון Google Drive / YouTube / Dropbox / אתר משלך (האחסון שלך חינמי!), הפוך את התיקייה לציבורית ("כל מי שקיבל קישור") והדבק כאן את הקישור המלא.</span>
-          </div>
-
-          <div class="form-field">
-            <label for="archType">סוג המאגר / הפלטפורמה</label>
-            <select id="archType">
-              <option value="תיקיית Google Drive">תיקיית Google Drive</option>
-              <option value="ערוץ / פלייליסט YouTube">ערוץ / פלייליסט YouTube</option>
-              <option value="פודקאסט (RSS / Spotify / Apple)">פודקאסט (RSS)</option>
-              <option value="ספרים / חוברות PDF סרוקות">ספרים / חוברות PDF סרוקות</option>
-              <option value="אתר / אודיו-בוקס / אחר">אתר / מקור אחר</option>
-            </select>
-          </div>
-
-          <div class="form-field">
-            <label for="archUrl">קישור מלא למאגר (URL) <span class="req-star">*</span></label>
-            <input type="url" id="archUrl" required placeholder="https://drive.google.com/drive/folders/..." dir="ltr" />
-            <div id="archUrlHint" class="field-hint hidden"></div>
-          </div>
-
-          <div class="form-field">
-            <label for="archTitle">שם המאגר / תיאור קצר <span class="req-star">*</span></label>
-            <input type="text" id="archTitle" required placeholder='לדוגמה: הקלטות חזרה נדירות מתש"ל–תש"מ / שיעורי תניא בעברית...' />
-          </div>
-
-          <div class="form-field">
-            <label>אילו ספרים / שפות נמצאים במאגר? (לחץ לסימון)</label>
-            <div class="tag-pick-row" id="archTagsRow">
-              <button type="button" class="mini-pill" data-arch-tag="תניא">תניא</button>
-              <button type="button" class="mini-pill" data-arch-tag="ליקוטי שיחות">ליקוטי שיחות</button>
-              <button type="button" class="mini-pill" data-arch-tag="ספר המאמרים מלוקט">סה"מ מלוקט</button>
-              <button type="button" class="mini-pill" data-arch-tag="המשך תרס&quot;ו / ע&quot;ב">תרס"ו / ע"ב</button>
-              <button type="button" class="mini-pill" data-arch-tag="חזרות">חזרות</button>
-              <button type="button" class="mini-pill" data-arch-tag="התוועדויות">התוועדויות</button>
-              <button type="button" class="mini-pill" data-arch-tag="עברית">עברית</button>
-              <button type="button" class="mini-pill" data-arch-tag="אידיש">אידיש</button>
-              <button type="button" class="mini-pill" data-arch-tag="אנגלית">אנגלית</button>
-              <button type="button" class="mini-pill" data-arch-tag="וידאו / PDF">וידאו / PDF</button>
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label for="archNotes">הערות, תאריכים או פרטי מבנה התיקיות (אופציונלי)</label>
-            <textarea id="archNotes" rows="3" placeholder="פירוט חלקים, מספרי סדרות, או איפה נמצאים קישורי השמע..."></textarea>
-          </div>
-
-          <div class="form-grid-2">
-            <div class="form-field">
-              <label for="archName">שם מלא (אופציונלי)</label>
-              <input type="text" id="archName" placeholder="השם שלך (אופציונלי)" />
-            </div>
-            <div class="form-field">
-              <label for="archContact">אימייל ליצירת קשר (אופציונלי)</label>
-              <input type="text" id="archContact" placeholder="למקרה שנצטרך הרשאת צפייה או הבהרה" />
-            </div>
-          </div>
-
-          <div class="form-actions-row">
-            <button type="submit" class="btn-primary">➕ הכן ושלח מאגר להוספה</button>
-            <span id="archFormStatus" class="form-status-msg hidden"></span>
-          </div>
-          <div id="archDispatchBox" class="dispatch-box hidden"></div>
-        </form>
-
-        <aside class="community-side-card">
-          <div id="archGoogleFormMount" class="hidden" style="margin-bottom:16px;"></div>
-          <h3>📋 מאגרים שהכנת ושלחת מהדפדפן</h3>
-          <p class="section-subtitle">תיעוד ההצעות שנשמרו אצלך עם אפשרות שליחה או העתקה מחדש</p>
-          <div id="submittedArchivesList" class="submitted-list"></div>
-        </aside>
-      </div>
+      <div id="archGoogleFormMount" class="google-form-card"></div>
     </section>
 
-    <!-- VIEW 7: FEEDBACK & ISSUE REPORTING -->
+    <!-- VIEW 7: FEEDBACK & CONTACT (Google Form Only) -->
     <section id="viewFeedback" class="view-section hidden">
       <div class="section-header-row">
         <div>
-          <h2 class="section-title">שליחת פידבק, דיווח על תקלות והצעות לשיפור</h2>
-          <p class="section-subtitle">מצאת שיעור שלא מתנגן, מאמר שממוקם תחת ספר לא נכון, או שיש לך רעיון לשפר את האתר? נשמח לשמוע!</p>
+          <h2 class="section-title">שליחת פידבק ויצירת קשר</h2>
+          <p class="section-subtitle">דיווח על קישור שבור, תיקון סיווג ספר או הצעה לשיפור האתר — מלאו את הטופס ונשמח לחזור אליכם:</p>
         </div>
       </div>
-
-      <div class="community-layout">
-        <form id="feedbackForm" class="community-form-card" novalidate>
-          <div class="form-field">
-            <label>נושא הפנייה</label>
-            <div class="tag-pick-row" id="fbTypePills">
-              <button type="button" class="mini-pill active" data-fbtype="🔗 דיווח על קישור שבור / חסר">🔗 קישור שבור / חסר</button>
-              <button type="button" class="mini-pill" data-fbtype="📚 תיקון סיווג ספר / חלק">📚 תיקון סיווג ספר</button>
-              <button type="button" class="mini-pill" data-fbtype="📱 שיפור עיצוב ומגע">📱 שיפור עיצוב ומגע</button>
-              <button type="button" class="mini-pill" data-fbtype="💡 הצעה לתכונה חדשה">💡 רעיון חדש</button>
-              <button type="button" class="mini-pill" data-fbtype="🙏 משוב כללי">🙏 משוב כללי</button>
-            </div>
-          </div>
-
-          <div class="form-field">
-            <div class="label-with-helper">
-              <label for="fbSubject">איזה שיעור / עמוד מדובר? (אופציונלי)</label>
-              <button type="button" id="fbAttachLastBtn" class="btn-outline btn-sm hidden">🎧 קשר לשיעור האחרון ששמעתי</button>
-            </div>
-            <input type="text" id="fbSubject" placeholder="שם השיעור, הסדרה, הספר או האזור באתר" />
-          </div>
-
-          <div class="form-field">
-            <label for="fbMessage">פירוט הפידבק / ההצעה <span class="req-star">*</span></label>
-            <textarea id="fbMessage" rows="4" required placeholder="כתוב כאן כל הערה, תיקון סדר שיעורים או בקשה..."></textarea>
-          </div>
-
-          <div class="form-grid-2">
-            <div class="form-field">
-              <label for="fbName">שם מלא (אופציונלי)</label>
-              <input type="text" id="fbName" placeholder="השם שלך (או השאר ריק לפנייה אנונימית)" />
-            </div>
-            <div class="form-field">
-              <label for="fbContact">כתובת אימייל לחזרה (אופציונלי)</label>
-              <input type="text" id="fbContact" placeholder="לדוגמה name@gmail.com אם תרצה מענה" />
-            </div>
-          </div>
-
-          <div class="form-actions-row">
-            <button type="submit" class="btn-primary">💬 שלח פידבק</button>
-            <span id="fbFormStatus" class="form-status-msg hidden"></span>
-          </div>
-          <div id="fbDispatchBox" class="dispatch-box hidden"></div>
-        </form>
-
-        <aside class="community-side-card">
-          <div id="fbGoogleFormMount" class="hidden" style="margin-bottom:16px;"></div>
-          <h3>🕊️ פניות פידבק ששלחת</h3>
-          <p class="section-subtitle">נשמר מקומית לתיעוד שלך; ניתן להעתיק או לשלוח ישירות בלחיצה</p>
-          <div id="submittedFeedbackList" class="submitted-list"></div>
-        </aside>
-      </div>
+      <div id="fbGoogleFormMount" class="google-form-card"></div>
     </section>
   </main>
 
