@@ -217,7 +217,9 @@
     searchInput: $("globalSearchInput"),
     clearSearchBtn: $("clearSearchBtn"),
     themeToggleBtn: $("themeToggleBtn"),
-    navTabs: document.querySelectorAll(".nav-tab"),
+    mainNav: $("mainNav"),
+    mobileMoreNavBtn: $("mobileMoreNavBtn"),
+    navTabs: document.querySelectorAll(".nav-tab[data-view]"),
     navTotalCount: $("navTotalCount"),
     navPdfCount: $("navPdfCount"),
     navSavedCount: $("navSavedCount"),
@@ -234,9 +236,13 @@
     },
 
     // Browse Wizard
+    browseTopbar: $("browseTopbar"),
+    browseFiltersToggleBtn: $("browseFiltersToggleBtn"),
+    browseFiltersSummary: $("browseFiltersSummary"),
     browseLangPills: $("browseLangPills"),
     browseFmtPills: $("browseFmtPills"),
     browseOpenInCatalogBtn: $("browseOpenInCatalogBtn"),
+    breadcrumbBar: $("breadcrumbBar"),
     browseBreadcrumbs: $("browseBreadcrumbs"),
     browseBackBtn: $("browseBackBtn"),
     browseStepKicker: $("browseStepKicker"),
@@ -413,6 +419,9 @@
       sec.classList.toggle("active", k === viewName);
     });
     el.navTabs.forEach((t) => t.classList.toggle("active", t.dataset.view === viewName));
+    el.mainNav?.classList.remove("more-open");
+    el.mobileMoreNavBtn?.setAttribute("aria-expanded", "false");
+    el.mobileMoreNavBtn?.classList.toggle("active", ["portals", "submitArchive", "feedback"].includes(viewName));
     if (viewName === "browse") renderBrowse();
     if (viewName === "catalog") renderCatalog();
     if (viewName === "seforim") renderSeforimPdfView();
@@ -456,6 +465,7 @@
     }).join("");
 
     const hasDepth = !!(br.cat || br.r || br.b || br.ts || br.ma || br.v || br.sec);
+    el.breadcrumbBar?.classList.toggle("hidden", !hasDepth);
     el.browseBackBtn.classList.toggle("hidden", !hasDepth);
     el.browseOpenInCatalogBtn.classList.toggle("hidden", !br.cat);
   }
@@ -712,7 +722,7 @@
         el.browseStepKicker.textContent = `סדרה שלמה — ${br.b}`;
         el.browseStepTitle.textContent = br.ts;
         el.browseStepSub.textContent = `${tsPool.length} שיעורים ברצף — לחץ "נגן סדרה מההתחלה" להאזנה רצופה`;
-        renderSeriesList(el.browseStageContent, [{ gid: `ts_${br.b}_${br.ts}`, first: tsPool[0], tracks: tsPool, customTitle: br.ts }], { openAll: true });
+        renderSeriesList(el.browseStageContent, [{ gid: `ts_${br.b}_${br.ts}`, first: tsPool[0], tracks: tsPool, customTitle: br.ts }], { openAll: true, hidePath: true });
         return;
       }
       // Tanya by Perek mode: Step 4 picks Perek, Step 5 shows ALL series covering that Perek!
@@ -746,7 +756,7 @@
       el.browseStepKicker.textContent = `שיעורים לסדרה — ${br.b}`;
       el.browseStepTitle.textContent = br.v;
       el.browseStepSub.textContent = `נמצאו ${groups.length} סדרות שיעורים שונות (${pPool.length} שיעורים סה"כ)`;
-      renderSeriesList(el.browseStageContent, groups, { openAll: true });
+      renderSeriesList(el.browseStageContent, groups, { openAll: true, hidePath: true });
       return;
     }
 
@@ -814,7 +824,7 @@
       el.browseStepKicker.textContent = `שיעורים לפי מאמר — ${br.b}`;
       el.browseStepTitle.textContent = br.ma;
       el.browseStepSub.textContent = `נמצאו ${numberedGroups.length} ${numberedGroups.length === 1 ? "סדרה" : "סדרות"} על מאמר זה (${maPool.length} שיעורים סה"כ) — לחץ להאזנה ברצף`;
-      renderSeriesList(el.browseStageContent, numberedGroups, { openAll: numberedGroups.length <= 12 });
+      renderSeriesList(el.browseStageContent, numberedGroups, { openAll: numberedGroups.length <= 12, hidePath: true });
       return;
     }
 
@@ -920,7 +930,7 @@
     el.browseStepTitle.textContent = leafTitle;
     el.browseStepSub.textContent = `${seriesGroups.length} ${seriesGroups.length === 1 ? "סדרת שיעורים" : "סדרות שיעורים"} (${leafPool.length} שיעורים סה"כ) — בחר סדרה והאזן ברצף`;
 
-    renderSeriesList(el.browseStageContent, seriesGroups, { openAll: seriesGroups.length <= 12 });
+    renderSeriesList(el.browseStageContent, seriesGroups, { openAll: seriesGroups.length <= 12, hidePath: true });
   }
 
   function renderTanyaTools(showFilter) {
@@ -1000,10 +1010,10 @@
         <article class="series-card" data-gid="${escHtml(grp.gid)}">
           <div class="series-card-head">
             <div class="series-meta-col">
-              <div class="series-path-line">${escHtml(pathParts.join(" › "))}</div>
+              ${opts.hidePath ? "" : `<div class="series-path-line">${escHtml(pathParts.join(" › "))}</div>`}
               <div class="series-title-row">
                 <h3 class="series-title">${escHtml(seriesTitle)}</h3>
-                ${isMulti ? `<span class="badge badge-series">📚 סדרה — ${tracks.length} שיעורים ברצף</span>` : ""}
+                ${isMulti ? `<span class="badge badge-series badge-series-count">📚 סדרה — ${tracks.length} שיעורים ברצף</span>` : ""}
               </div>
               <div class="series-badges">
                 ${getLangBadges(f)}
@@ -1708,6 +1718,10 @@
     });
 
     el.navTabs.forEach((t) => t.addEventListener("click", () => switchView(t.dataset.view)));
+    el.mobileMoreNavBtn?.addEventListener("click", () => {
+      const isOpen = el.mainNav.classList.toggle("more-open");
+      el.mobileMoreNavBtn.setAttribute("aria-expanded", String(isOpen));
+    });
 
     // Global Search -> switches cleanly to Catalog (Grouped Series view!)
     let searchTimer = null;
@@ -1745,11 +1759,26 @@
     });
 
     // Browse Top Filter Strip & Breadcrumbs
+    const updateBrowseFiltersSummary = () => {
+      const { lang, fmt } = state.browse;
+      const isFiltered = lang !== "all" || fmt !== "all";
+      const lTxt = lang === "all" ? "כל השפות" : (LANG_META[lang]?.label || lang);
+      const fTxt = fmt === "all" ? "הכל" : (FMT_META[fmt]?.label || fmt);
+      if (el.browseFiltersSummary) {
+        el.browseFiltersSummary.textContent = `${isFiltered ? "סינון פעיל" : "סינון מהיר"}: ${lTxt} · ${fTxt}`;
+      }
+      el.browseTopbar?.classList.toggle("has-active", isFiltered);
+    };
+    el.browseFiltersToggleBtn?.addEventListener("click", () => {
+      const open = el.browseTopbar.classList.toggle("open");
+      el.browseFiltersToggleBtn.setAttribute("aria-expanded", String(open));
+    });
     el.browseLangPills.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-blang]");
       if (!btn) return;
       state.browse.lang = btn.dataset.blang;
       el.browseLangPills.querySelectorAll(".mini-pill").forEach((b) => b.classList.toggle("active", b === btn));
+      updateBrowseFiltersSummary();
       renderBrowse();
     });
     el.browseFmtPills.addEventListener("click", (e) => {
@@ -1757,6 +1786,7 @@
       if (!btn) return;
       state.browse.fmt = btn.dataset.bfmt;
       el.browseFmtPills.querySelectorAll(".mini-pill").forEach((b) => b.classList.toggle("active", b === btn));
+      updateBrowseFiltersSummary();
       renderBrowse();
     });
     el.browseBreadcrumbs.addEventListener("click", (e) => {
@@ -1839,6 +1869,7 @@
         state.browse.fmt = "all";
         el.browseLangPills.querySelectorAll(".mini-pill").forEach((b) => b.classList.toggle("active", b.dataset.blang === "all"));
         el.browseFmtPills.querySelectorAll(".mini-pill").forEach((b) => b.classList.toggle("active", b.dataset.bfmt === "all"));
+        updateBrowseFiltersSummary();
         renderBrowse();
       }
     });

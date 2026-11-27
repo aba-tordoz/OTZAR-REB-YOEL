@@ -36,7 +36,7 @@
             <circle cx="11" cy="11" r="7.5"/>
             <path d="M20 20l-4-4" stroke-linecap="round"/>
           </svg>
-          <input type="search" id="globalSearchInput" placeholder="חפש מאמר, שיחה, פרק, פרשה, שנת תרס״ו / תש״מ... ( / )" autocomplete="off" />
+          <input type="search" id="globalSearchInput" placeholder="חפש מאמר, שיחה, פרק או פרשה... ( / )" autocomplete="off" />
           <button type="button" id="clearSearchBtn" class="clear-search-btn hidden" title="נקה חיפוש" aria-label="נקה חיפוש">&times;</button>
         </div>
       </div>
@@ -51,7 +51,7 @@
     </div>
 
     <!-- Primary Clean Nav Tabs -->
-    <nav class="main-nav" aria-label="ניווט ראשי">
+    <nav class="main-nav" id="mainNav" aria-label="ניווט ראשי">
       <div class="container nav-tabs-row">
         <button type="button" class="nav-tab active" data-view="browse">
           <span class="tab-icon">📚</span>
@@ -72,17 +72,20 @@
           <span>שמורים</span>
           <span class="tab-badge" id="navSavedCount">0</span>
         </button>
-        <button type="button" class="nav-tab" data-view="portals">
+        <button type="button" class="nav-tab nav-tab-secondary" data-view="portals">
           <span class="tab-icon">🌐</span>
           <span>מאגרים</span>
         </button>
-        <button type="button" class="nav-tab" data-view="submitArchive">
+        <button type="button" class="nav-tab nav-tab-secondary" data-view="submitArchive">
           <span class="tab-icon">➕</span>
           <span>שליחת מאגר</span>
         </button>
-        <button type="button" class="nav-tab" data-view="feedback">
+        <button type="button" class="nav-tab nav-tab-secondary" data-view="feedback">
           <span class="tab-icon">💬</span>
           <span>שליחת משוב</span>
+        </button>
+        <button type="button" class="nav-tab nav-more-toggle" id="mobileMoreNavBtn" aria-expanded="false" aria-label="עוד אפשרויות">
+          <span>עוד ▾</span>
         </button>
       </div>
     </nav>
@@ -95,7 +98,11 @@
     <!-- VIEW 1: CLEAN CHASSIDUS-APP STYLE STEPPED LIBRARY BROWSER -->
     <section id="viewBrowse" class="view-section active">
       <!-- Quiet Single-Bar Language / Format Filter -->
-      <div class="browse-topbar">
+      <div class="browse-topbar" id="browseTopbar">
+        <button type="button" class="mobile-strip-toggle" id="browseFiltersToggleBtn" aria-expanded="false">
+          <span id="browseFiltersSummary">סינון מהיר: כל השפות · הכל</span>
+          <span class="toggle-chev" aria-hidden="true">▾</span>
+        </button>
         <div class="browse-filters-strip">
           <div class="filter-pill-row" id="browseLangPills" aria-label="סינון לפי שפה">
             <span class="strip-label">שפה:</span>
