@@ -804,15 +804,21 @@ def build():
                     b = 'קונטרסים'
                     v = p[3] if len(p) > 3 else "קונטרסים"
                     raw_ser = next((seg for seg in p if "Series" in seg or "Seires" in seg), "")
-                    sec = re.sub(r'\s*[-–#]*\s*\d+\s*$', '', title).strip()
+                    sec = re.sub(r'\s*[-–#]*\s*\d*\s*$', '', title).strip().rstrip(" -–").strip()
                     m_sn = re.search(r'(\d+)', raw_ser)
                     ser = f"סדרה #{m_sn.group(1)} (היכל מנחם)" if m_sn else "היכל מנחם"
                     gid_key = f"ha_knt_{v}_{raw_ser or tape_code}"
                 elif raw_b == 'הדרנים':
                     b = 'הדרנים'
                     v = p[3] if len(p) > 3 else "הדרנים"
-                    sec = title
                     raw_ser = next((seg for seg in p if "Series" in seg), "")
+                    if "5735" in title or 'תשל"ה' in raw_ser:
+                        sec = 'הדרן על הרמב"ם — תשל"ה'
+                    else:
+                        sec = re.sub(r'\s*[-–#]*\s*\d+\s*$', '', title).strip().rstrip(" -–").strip()
+                    m_sn = re.search(r'(\d+)', raw_ser)
+                    if m_sn:
+                        ser = f"סדרה #{m_sn.group(1)} (היכל מנחם)"
                     gid_key = f"ha_hdr_{v}_{raw_ser or tape_code}"
                 elif 'תורת מנחם' in raw_b:
                     b = 'מאמרים (בלתי מוגה ותורת מנחם)'
@@ -1026,11 +1032,13 @@ def build():
         elif "תורה אור" in blob:
             cat, r, b = "ספרים", REBBE_ZAKEN, 'תורה אור'
             vol = PARSHA_TO_CHUMASH.get(parsha, "חנוכה ופורים" if parsha in ("חנוכה", "פורים") else "כללי")
-            sec = stem
+            clean_sec = re.sub(r'^(?:תורה אור\s+)?(?:פרשת\s+)?', '', stem).strip()
+            sec = f"{parsha} › {clean_sec}" if (parsha and parsha not in clean_sec) else (clean_sec or stem)
         elif "לקוטי תורה" in blob or "ליקוטי תורה" in blob:
             cat, r, b = "ספרים", REBBE_ZAKEN, 'לקוטי תורה'
             vol = PARSHA_TO_CHUMASH.get(parsha, "ימים טובים — מועדים")
-            sec = stem
+            clean_sec = re.sub(r'^(?:לקוטי תורה|ליקוטי תורה)\s*(?:ד"?ה\s+)?', '', stem).strip()
+            sec = f"{parsha} › {clean_sec}" if (parsha and parsha not in clean_sec) else (clean_sec or stem)
         elif 'תרס"ו' in blob or 'ס"ו' in blob:
             cat, r, b = "ספרים", REBBE_RASHAB, 'המשך תרס"ו (ס"ו)'
             vol = stem
@@ -1509,16 +1517,34 @@ def build():
                 elif p1 == "hadranim":
                     b = 'הדרנים'
                     p2 = path[2] if len(path) > 2 else ""
-                    if "rambam" in p2.lower(): vol = 'הדרנים על הרמב"ם'
-                    elif "brochos" in p2.lower(): vol = 'הדרנים על הש"ס'
-                    elif "5746" in p2: vol = 'הדרנים — תשמ"ו'
-                    else: vol = "הדרנים"
-                    sec = path[2] if len(path) > 2 else clean_name
-                    ser = f"Google Drive: {p2}"
+                    if "rambam" in p2.lower():
+                        vol = 'הדרנים על הרמב"ם'
+                        if "5735" in p2:
+                            sec = 'הדרן על הרמב"ם (תשל"ה)'
+                            ser = 'הדרן על הרמב"ם (תשל"ה) — Google Drive'
+                            gid_key = "gd_hdr_rambam_5735"
+                            m_hn = re.match(r'^0*(\d+)', p2)
+                            if m_hn: ord_n = int(m_hn.group(1)) * 10
+                        else:
+                            sec = p2 or clean_name
+                            ser = f"Google Drive: {p2}"
+                    elif "brochos" in p2.lower():
+                        vol, sec, ser = 'הדרנים על הש"ס', p2, f"Google Drive: {p2}"
+                    elif "5746" in p2:
+                        vol, sec, ser = 'הדרנים — תשמ"ו', p2, f"Google Drive: {p2}"
+                    else:
+                        vol, sec, ser = "הדרנים", (p2 or clean_name), f"Google Drive: {p2}"
                 elif p1 == "rshimois":
                     b = 'ספר השיחות ורשימות'
                     vol = "רשימות"
-                    sec = path[2] if len(path) > 2 else clean_name
+                    raw_rsh = path[2] if len(path) > 2 else clean_name
+                    m_kr = re.search(r'kuntris[-\s]*(\d+)', raw_rsh, re.I)
+                    if m_kr:
+                        kr_n = int(m_kr.group(1))
+                        sec = f"קונטרס רשימות — חוברת {num_to_heb_letters(kr_n)}"
+                        ord_n = kr_n * 10
+                    else:
+                        sec = raw_rsh
                     ser = f"Google Drive: {sec}"
                 else:
                     # sichois
@@ -1654,6 +1680,8 @@ def build():
             musogim_heb = GD_MUSOGIM_HEB.get(clean_name.strip().lower(), "")
             if doc_title_override:
                 disp_title = doc_title_override
+            elif "chazora" in low_blob and ext == "txt" and years:
+                disp_title = f"רישום חזרות — ה'{years[0]}"
             elif clean_name.lower() == "new text document.txt":
                 yr_doc = num_to_hebrew_year(int(path[1])) if len(path) > 1 and path[1].isdigit() else (path[1] if len(path) > 1 else "")
                 disp_title = f"רשימת וציוני חזרות — {yr_doc}" if yr_doc else "רשימת וציוני חזרות"
@@ -2052,11 +2080,20 @@ def build():
         },
         "items": unified,
     }
-    # Compute exact multiSeriesCount
+    # Compute exact multiSeriesCount before compacting empty fields
     gid_cnt = defaultdict(int)
     for x in unified:
         gid_cnt[x["gid"]] += 1
     payload["meta"]["multiSeriesCount"] = sum(1 for c in gid_cnt.values() if c >= 2)
+
+    # Slim items cleanly: drop falsy empty fields & derivable Google Drive uc?export=download URLs
+    slim_items = []
+    for x in unified:
+        cx = {k: v for k, v in x.items() if v not in ("", 0, [], None)}
+        if cx.get("src") == "gdrive" and cx.get("dr") and cx.get("dl", "").startswith("https://drive.google.com/uc?export=download"):
+            cx.pop("dl", None)
+        slim_items.append(cx)
+    payload["items"] = slim_items
 
     js_path = os.path.join(DATA_DIR, "shiurim_data.js")
     with open(js_path, "w", encoding="utf-8") as f:

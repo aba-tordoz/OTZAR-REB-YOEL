@@ -207,6 +207,23 @@ html[data-theme="dark"] .nav-tab.active { color: #09111E; }
 }
 .nav-tab:not(.active) .tab-badge { background: var(--bg-pill); color: var(--text-muted); }
 .nav-more-toggle, .mobile-strip-toggle { display: none; }
+.app-toast {
+  position: fixed;
+  bottom: 92px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 95;
+  background: var(--primary);
+  color: #fff;
+  padding: 9px 18px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(212, 161, 42, 0.55);
+  pointer-events: none;
+}
+html[data-theme="dark"] .app-toast { color: #09111E; }
 
 /* Workspace Container */
 .main-content { padding-top: 20px; padding-bottom: 40px; }

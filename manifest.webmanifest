@@ -1,0 +1,20 @@
+{
+  "name": "אוצר שיעורי ר' יואל",
+  "short_name": "שיעורי ר' יואל",
+  "description": "הארכיון המאוחד לשיעורי, חזרות, התוועדויות וספרי הגה\"ח רבי יואל כהן ע\"ה",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FAF6EE",
+  "theme_color": "#1B3B6F",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -20,6 +20,18 @@
   const GROUPS_MAP = new Map(); // gid -> ordered array of tracks
   for (let i = 0; i < ITEMS.length; i++) {
     const it = ITEMS[i];
+    if (!it.r) it.r = "";
+    if (!it.v) it.v = "";
+    if (!it.sec) it.sec = "";
+    if (!it.ser) it.ser = "";
+    if (!it.ts) it.ts = "";
+    if (!it.sub) it.sub = "";
+    if (!it.p) it.p = "";
+    if (!it.d) it.d = 0;
+    if (!it.l) it.l = [];
+    if (!it.f) it.f = [];
+    if (!it.y) it.y = [];
+    if (!it.decs) it.decs = [];
     ITEMS_BY_ID.set(it.id, it);
     const gid = it.gid || it.id;
     if (!GROUPS_MAP.has(gid)) GROUPS_MAP.set(gid, []);
@@ -49,6 +61,8 @@
     bookmarks: "reb_yoel_bookmarks_v1",
     history: "reb_yoel_history_v1",
     progress: "reb_yoel_progress_v1",
+    speed: "reb_yoel_speed_v1",
+    autoNext: "reb_yoel_autonext_v1",
     submittedArchives: "reb_yoel_submitted_archives_v1",
     submittedFeedback: "reb_yoel_submitted_feedback_v1",
   };
@@ -87,9 +101,14 @@
     if (!val) return "9_";
     if (val.includes("דף השער")) return "0_0000";
     if (val.includes("חינוך קטן")) return "0_0001";
-    let m = val.match(/^פרק(?:ים)?\s+([א-ת"'״׳]+)/);
+    let m = val.match(/^(?:פרק(?:ים)?|סימן(?:ים)?|סעיף(?:ים)?)\s+([א-ת"'״׳]+)/);
     if (m) {
       const n = parseHebNum(m[1]);
+      if (n !== null) return "0_" + String(n + 10).padStart(4, "0");
+    }
+    const mChov = val.match(/חוברת\s+([א-ת"'״׳]+|\d+)/);
+    if (mChov) {
+      const n = /^\d+$/.test(mChov[1]) ? Number(mChov[1]) : parseHebNum(mChov[1]);
       if (n !== null) return "0_" + String(n + 10).padStart(4, "0");
     }
     m = val.match(/^(?:חלק|מלוקט[^ח]*חלק)\s+([א-ת"'״׳]+)/);
@@ -105,7 +124,7 @@
     const parCand = val.split(/\s*›\s*/)[0].replace(/^פרשת\s+|^פר['׳"]?\s+/, "").replace(/\s*\([^)]*\)\s*$/, "").replace("כי תבא", "כי תבוא").trim();
     const pi = PARSHA_ORDER.indexOf(parCand);
     if (pi !== -1) return "3_" + String(pi).padStart(3, "0") + "_" + val;
-    const mNum = val.match(/^(?:\[|Drive\s*\[|סדרה\s*#?)(\d+)/i);
+    const mNum = val.match(/^(?:\[|Drive\s*\[|סדרה\s*#?|\s*)(\d{1,4})(?:[-_\s\]]|$)/i);
     if (mNum) return "4_" + String(Number(mNum[1])).padStart(4, "0") + "_" + val;
     const yrM = val.match(/(?:^|\s|מאמרים\s+)(עטר["'״׳]?ת|עת["'״׳]?ר|תנש["'״׳]?א|ת["'״׳]ש|תער["'״׳]?[א-ת]|ת[רש][א-ת"'״׳]{1,3}|ה'ת[א-ת"'״׳]{2,4})(?:\s|$|\))/);
     if (yrM) {
@@ -212,7 +231,7 @@
     queueSeriesName: "",
     currentTrackId: null,
     speeds: [1, 1.25, 1.5, 1.75, 2],
-    speedIdx: 0,
+    speedIdx: Math.min(4, Math.max(0, Number(loadJSON(LS_KEYS.speed, 0)) || 0)),
   };
 
   // DOM Cache
@@ -323,12 +342,53 @@
     playerErrorDownloadLink: $("playerErrorDownloadLink"),
     modalPills: $("modalPills"),
     modalTitle: $("modalTitle"),
+    modalShareBtn: $("modalShareBtn"),
     modalExternalBtn: $("modalExternalBtn"),
     closeModalBtn: $("closeModalBtn"),
     modalBody: $("modalBody"),
     modalSeriesPlaylist: $("modalSeriesPlaylist"),
     modalFooter: $("modalFooter"),
+    appToast: $("appToast"),
   };
+
+  let _toastTimer = null;
+  function showToast(msg) {
+    if (!el.appToast) return;
+    el.appToast.textContent = msg;
+    el.appToast.classList.remove("hidden");
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => el.appToast?.classList.add("hidden"), 2300);
+  }
+
+  function buildShareUrl(hashStr) {
+    const base = window.location.href.split("#")[0];
+    return hashStr ? `${base}#${hashStr}` : base;
+  }
+
+  async function shareLink({ title, text, hash }) {
+    const url = buildShareUrl(hash);
+    if (navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+      try {
+        await navigator.share({ title: title || "אוצר שיעורי ר' יואל", text: text || "", url });
+        return;
+      } catch (e) {
+        if (e && e.name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast("✓ הקישור הועתק לשיתוף");
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); showToast("✓ הקישור הועתק לשיתוף"); } catch {}
+      document.body.removeChild(ta);
+    }
+  }
 
   function escHtml(s) {
     return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -359,7 +419,14 @@
     }).join("");
   }
   function getDirectDownloadUrl(it) {
-    return it.au || it.dl || (it.vi && !it.vi.startsWith("yt:") ? it.vi : "") || it.pd || it.pg || "";
+    if (it.au) return it.au;
+    if (it.dl) return it.dl;
+    const drv = it.dr || it.pd || "";
+    if (drv.includes("drive.google.com/file/d/")) {
+      const m = drv.match(/\/file\/d\/([^/?]+)(?:\/preview\?resourcekey=([^&]+))?/);
+      if (m) return `https://drive.google.com/uc?export=download&id=${m[1]}${m[2] ? `&resourcekey=${m[2]}` : ""}`;
+    }
+    return (it.vi && !it.vi.startsWith("yt:") ? it.vi : "") || it.pd || it.pg || "";
   }
   function getSourceUrl(it) {
     return (it && (it.pg || SOURCES[it.src]?.url || getDirectDownloadUrl(it))) || "";
@@ -428,6 +495,98 @@
     }
   }
 
+  let _suppressHashSync = false;
+  function buildStateHash() {
+    const p = new URLSearchParams();
+    if (state.view && state.view !== "browse") {
+      p.set("view", state.view);
+      if (state.view === "catalog" && state.filters.q) p.set("q", state.filters.q);
+      return p.toString();
+    }
+    const br = state.browse;
+    if (br.lang !== "all") p.set("lang", br.lang);
+    if (br.fmt !== "all") p.set("fmt", br.fmt);
+    if (br.cat) p.set("cat", br.cat);
+    if (br.r) p.set("r", br.r);
+    if (br.b) p.set("b", br.b);
+    if (br.tanyaMode === "cycle") p.set("tm", "cycle");
+    if (br.bookMode === "maamar") p.set("bm", "maamar");
+    if (br.ts) p.set("ts", br.ts);
+    if (br.ma) p.set("ma", br.ma);
+    if (br.v) p.set("v", br.v);
+    if (br.sec) p.set("sec", br.sec);
+    return p.toString();
+  }
+
+  function syncUrlHash(push = true) {
+    if (_suppressHashSync) return;
+    const h = buildStateHash();
+    const nextUrl = h ? `#${h}` : window.location.pathname + window.location.search;
+    const curHash = window.location.hash.replace(/^#/, "");
+    if (curHash === h) return;
+    try {
+      if (push) history.pushState(null, "", nextUrl);
+      else history.replaceState(null, "", nextUrl);
+    } catch {
+      if (h) window.location.hash = h;
+    }
+  }
+
+  function applyHashFromLocation() {
+    const rawH = window.location.hash.replace(/^#/, "");
+    const p = new URLSearchParams(rawH);
+    const shiurId = p.get("shiur");
+    _suppressHashSync = true;
+    try {
+      if (shiurId && ITEMS_BY_ID.has(shiurId)) {
+        const it = ITEMS_BY_ID.get(shiurId);
+        Object.assign(state.browse, {
+          lang: "all", fmt: "all",
+          cat: it.cat || null, r: it.r || null, b: it.b || null,
+          tanyaMode: "perek", bookMode: "vol", ts: null, ma: null,
+          v: it.v || null, sec: it.sec || null, stageFilter: "", includeParshaBooks: false,
+        });
+        switchView("browse");
+        if (it.au) startSeriesPlayback(it.gid, it.id);
+        else if (it.dr) openMediaModal(it, "drive", it.gid);
+        else if (it.vi) openMediaModal(it, "video", it.gid);
+        else if (it.pd) openMediaModal(it, "pdf", it.gid);
+        return;
+      }
+      const view = p.get("view") || "browse";
+      if (view === "browse") {
+        Object.assign(state.browse, {
+          lang: p.get("lang") || "all",
+          fmt: p.get("fmt") || "all",
+          cat: p.get("cat") || null,
+          r: p.get("r") || null,
+          b: p.get("b") || null,
+          tanyaMode: p.get("tm") || "perek",
+          bookMode: p.get("bm") || "vol",
+          ts: p.get("ts") || null,
+          ma: p.get("ma") || null,
+          v: p.get("v") || null,
+          sec: p.get("sec") || null,
+          stageFilter: "",
+          includeParshaBooks: false,
+        });
+        el.browseLangPills.querySelectorAll(".mini-pill").forEach((b) => b.classList.toggle("active", b.dataset.blang === state.browse.lang));
+        el.browseFmtPills.querySelectorAll(".mini-pill").forEach((b) => b.classList.toggle("active", b.dataset.bfmt === state.browse.fmt));
+        switchView("browse");
+      } else if (el.views[view]) {
+        if (view === "catalog" && p.has("q")) {
+          state.filters.q = p.get("q") || "";
+          el.searchInput.value = state.filters.q;
+          el.clearSearchBtn.classList.toggle("hidden", !state.filters.q);
+          applyCatalogFilters(true);
+        }
+        switchView(view);
+      }
+    } finally {
+      _suppressHashSync = false;
+    }
+  }
+
   function switchView(viewName) {
     state.view = viewName;
     el.filtersSidebar.classList.remove("open");
@@ -446,6 +605,7 @@
     if (viewName === "saved") renderSavedView();
     if (viewName === "submitArchive") renderSubmitArchiveView();
     if (viewName === "feedback") renderFeedbackView();
+    syncUrlHash(true);
     scrollToRelevantContent(el.views[viewName]);
   }
 
@@ -499,6 +659,7 @@
     else if (br.r) { br.r = null; }
     else if (br.cat) { br.cat = null; }
     renderBrowse();
+    syncUrlHash(true);
   }
 
   function jumpBrowseCrumb(level) {
@@ -523,6 +684,7 @@
       br.sec = null;
     }
     renderBrowse();
+    syncUrlHash(true);
   }
 
   function renderStepGrid(cards, opts = {}) {
@@ -1057,7 +1219,10 @@
                 ${totalDur > 0 ? `<span class="badge">⏱️ ${formatTime(totalDur)}</span>` : ""}
               </div>
             </div>
-            <div class="series-head-actions">${playAllBtn}</div>
+            <div class="series-head-actions">
+              ${playAllBtn}
+              <button type="button" class="btn-ghost btn-sm" data-action="share-series" data-id="${escHtml(f.id)}" title="העתק קישור ישיר לסדרה">📤 שתף</button>
+            </div>
           </div>
 
           <div class="series-tracks-list">
@@ -1095,7 +1260,7 @@
             <div class="track-sub-meta">
               ${it.d > 0 ? `<span>⏱️ ${formatTime(it.d)}</span>` : ""}
               ${it.p ? `<span>📖 ${escHtml(it.p)}</span>` : ""}
-              ${it.ts && !it.ser.includes(it.ts) ? `<span>${escHtml(it.ts)}</span>` : ""}
+              ${it.ts && !(it.ser || "").includes(it.ts) ? `<span>${escHtml(it.ts)}</span>` : ""}
               ${resumeHint ? `<span style="color:var(--gold);font-weight:700">${escHtml(resumeHint)}</span>` : ""}
             </div>
           </div>
@@ -1500,6 +1665,23 @@
     }
     pushHistory(it.id);
 
+    // Register Smartphone Lock-Screen / Media Key Controls
+    if ("mediaSession" in navigator) {
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: it.t,
+          artist: 'הגה"ח רבי יואל כהן ע"ה',
+          album: [it.b, it.sec || it.v].filter(Boolean).join(" › "),
+        });
+        navigator.mediaSession.setActionHandler("play", () => { el.nativeAudio.play().catch(() => {}); });
+        navigator.mediaSession.setActionHandler("pause", () => { el.nativeAudio.pause(); });
+        navigator.mediaSession.setActionHandler("previoustrack", state.queueIndex > 0 ? () => startAudioQueue(state.queue, state.queueIndex - 1, state.queueSeriesName) : null);
+        navigator.mediaSession.setActionHandler("nexttrack", state.queueIndex + 1 < state.queue.length ? () => startAudioQueue(state.queue, state.queueIndex + 1, state.queueSeriesName) : null);
+        navigator.mediaSession.setActionHandler("seekbackward", (d) => { el.nativeAudio.currentTime = Math.max(0, (el.nativeAudio.currentTime || 0) - (d.seekOffset || 15)); });
+        navigator.mediaSession.setActionHandler("seekforward", (d) => { el.nativeAudio.currentTime = (el.nativeAudio.currentTime || 0) + (d.seekOffset || 30); });
+      } catch {}
+    }
+
     // Highlight active track in DOM without full re-render flicker
     document.querySelectorAll(".series-track-row.playing-now").forEach((r) => r.classList.remove("playing-now"));
     document.querySelectorAll(`.series-track-row [data-id="${CSS.escape(it.id)}"]`).forEach((btn) => btn.closest(".series-track-row")?.classList.add("playing-now"));
@@ -1586,6 +1768,10 @@
       const spd = state.speeds[state.speedIdx];
       el.nativeAudio.playbackRate = spd;
       el.playerSpeedBtn.textContent = `${spd}x`;
+      saveJSON(LS_KEYS.speed, state.speedIdx);
+    });
+    el.playerAutoNext.addEventListener("change", () => {
+      saveJSON(LS_KEYS.autoNext, !!el.playerAutoNext.checked);
     });
     el.playerCloseBtn.addEventListener("click", () => {
       el.nativeAudio.pause();
@@ -1685,6 +1871,9 @@
 
     el.modalExternalBtn.textContent = "🔗 פתח במקור ↗";
     el.modalExternalBtn.href = srcUrl || extUrl || "#";
+    if (el.modalShareBtn) {
+      el.modalShareBtn.onclick = () => shareLink({ title: it.t, text: `${it.t} — אוצר שיעורי ר' יואל`, hash: `shiur=${encodeURIComponent(it.id)}` });
+    }
     const footerParts = [`<span>מקור: ${escHtml(SOURCES[it.src]?.name || it.src)}</span>`];
     if (srcUrl) footerParts.push(`<a href="${escHtml(srcUrl)}" target="_blank" rel="noopener" class="btn-outline btn-sm">🔗 עמוד המקור ↗</a>`);
     if (dlUrl) footerParts.push(`<a href="${escHtml(dlUrl)}" target="_blank" rel="noopener" class="btn-outline btn-sm">⬇ הורד קובץ ↗</a>`);
@@ -1893,6 +2082,7 @@
           state.browse.sec = null;
         }
         renderBrowse();
+        syncUrlHash(true);
         const browseFocusNode = el.breadcrumbBar && !el.breadcrumbBar.classList.contains("hidden")
           ? el.breadcrumbBar
           : el.browseStepTitle;
@@ -2022,13 +2212,16 @@
       else if (act === "play-drive") openMediaModal(it, "drive", gid || it.gid);
       else if (act === "play-video") openMediaModal(it, "video", gid || it.gid);
       else if (act === "open-pdf") openMediaModal(it, "pdf", gid || it.gid);
-      else if (act === "bookmark") {
+      else if (act === "share-series") {
+        shareLink({ title: it.t, text: `${it.t} — אוצר שיעורי ר' יואל`, hash: `shiur=${encodeURIComponent(it.id)}` });
+      } else if (act === "bookmark") {
         if (state.bookmarks.has(id)) state.bookmarks.delete(id);
         else state.bookmarks.add(id);
         saveJSON(LS_KEYS.bookmarks, [...state.bookmarks]);
         el.navSavedCount.textContent = state.bookmarks.size.toLocaleString("he-IL");
         actBtn.classList.toggle("saved", state.bookmarks.has(id));
         actBtn.textContent = state.bookmarks.has(id) ? "🔖" : "☆";
+        showToast(state.bookmarks.has(id) ? "🔖 נשמר בסימניות" : "הוסר מהסימניות");
         if (state.view === "saved") renderSavedView();
       }
     });
@@ -2085,6 +2278,9 @@
     el.navTotalCount.textContent = ITEMS.length.toLocaleString("he-IL");
     el.navPdfCount.textContent = pdfCount.toLocaleString("he-IL");
     el.navSavedCount.textContent = state.bookmarks.size.toLocaleString("he-IL");
+    el.playerSpeedBtn.textContent = `${state.speeds[state.speedIdx]}x`;
+    const savedAuto = loadJSON(LS_KEYS.autoNext, true);
+    if (typeof savedAuto === "boolean") el.playerAutoNext.checked = savedAuto;
 
     state.filtered = ITEMS;
     state.groupedSeries = buildTracksSeriesGroups(ITEMS);
@@ -2092,7 +2288,9 @@
     bindEvents();
     bindCommunityEvents();
     renderResumeBanner();
-    renderBrowse();
+    if (window.location.hash && window.location.hash.length > 1) applyHashFromLocation();
+    else renderBrowse();
+    window.addEventListener("hashchange", applyHashFromLocation);
   }
 
   init();

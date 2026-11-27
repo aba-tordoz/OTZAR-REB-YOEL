@@ -3,8 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1B3B6F" />
+  <meta name="description" content="אוצר שיעורי ר' יואל — הארכיון המאוחד של אלפי שיעורי חסידות, חזרות, התוועדויות וספרים מפי המשפיע הגה\"ח רבי יואל כהן ע\"ה (תניא, ליקוטי שיחות, המשך תרס\"ו, המשך תער\"ב, ספרי המאמרים, דרך מצותיך ועוד)." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="he_IL" />
+  <meta property="og:site_name" content="אוצר שיעורי ר' יואל" />
+  <meta property="og:title" content="אוצר שיעורי ר' יואל | ארכיון שיעורי הגה\"ח רבי יואל כהן ע\"ה" />
+  <meta property="og:description" content="מעל 9,100 שיעורי חסידות, חזרות מהתוועדויות הרבי, תניא, ליקוטי שיחות, המשך ס\"ו וע\"ב, ממוינים בסדרות להאזנה וצפייה ישירה." />
+  <meta name="twitter:card" content="summary" />
   <title>אוצר שיעורי ר' יואל | הארכיון המאוחד לשיעורי, חזרות וספרי הגה"ח רבי יואל כהן ע"ה</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%231B3B6F'/%3E%3Cpath d='M20 10v20M11 13c3-1.5 6.5-1 9 1 2.5-2 6-2.5 9-1v14c-3-1.5-6.5-1-9 1-2.5-2-6-2.5-9-1V13z' fill='none' stroke='%23FAF6EE' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='20' cy='8' r='2' fill='%23D4A12A'/%3E%3C/svg%3E" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="manifest" href="manifest.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -418,6 +428,7 @@
           <h3 id="modalTitle" class="modal-title"></h3>
         </div>
         <div class="modal-head-actions">
+          <button type="button" id="modalShareBtn" class="btn-ghost" title="העתק קישור ישיר לשיעור זה">📤 שתף</button>
           <a id="modalExternalBtn" href="#" target="_blank" rel="noopener" class="btn-ghost">פתח בחלון חדש ↗</a>
           <button type="button" id="closeModalBtn" class="close-modal-btn" aria-label="סגור">&times;</button>
         </div>
@@ -427,6 +438,8 @@
       <div class="modal-footer" id="modalFooter"></div>
     </div>
   </div>
+
+  <div id="appToast" class="app-toast hidden" role="status" aria-live="polite"></div>
 
   <footer class="site-footer">
     <div class="container footer-inner">
