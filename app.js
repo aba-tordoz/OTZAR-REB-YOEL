@@ -78,9 +78,10 @@
     return sum || null;
   }
 
-  const CHUMASH_ORD = { "ספר בראשית": 1, "ספר שמות": 2, "ספר ויקרא": 3, "ספר במדבר": 4, "ספר דברים": 5, "ימים טובים — מועדים": 6, "חנוכה ופורים": 6, "שיר השירים": 7 };
+  const CHUMASH_ORD = { "ספר בראשית": 1, "ספר שמות": 2, "ספר ויקרא": 3, "ספר במדבר": 4, "ספר דברים": 5, "ספר דברים / שיר השירים": 5.5, "ימים טובים — מועדים": 6, "חנוכה ופורים": 6, "שיר השירים": 7, "שיר השירים / אלול": 7.5 };
   const MONTH_ORD = { תשרי:1, חשון:2, כסלו:3, טבת:4, שבט:5, אדר:6, ניסן:7, אייר:8, סיון:9, תמוז:10, אב:11, אלול:12 };
   const PARSHA_ORDER = ["בראשית","נח","לך לך","וירא","חיי שרה","תולדות","ויצא","וישלח","וישב","מקץ","ויגש","ויחי","שמות","וארא","בא","בשלח","יתרו","משפטים","תרומה","תצוה","כי תשא","ויקהל","פקודי","ויקרא","צו","שמיני","תזריע","מצורע","אחרי מות","קדושים","אמור","בהר","בחוקותי","במדבר","נשא","בהעלותך","שלח","קרח","חוקת","בלק","פנחס","מטות","מסעי","דברים","ואתחנן","עקב","ראה","שופטים","כי תצא","כי תבוא","נצבים","וילך","האזינו","וזאת הברכה"];
+  const YEAR_ALIAS = { עטרת: 679, עתר: 670, תנשא: 751, תש: 700, תערב: 672, תרסו: 666 };
 
   function drillSortKey(val) {
     if (!val) return "9_";
@@ -99,14 +100,19 @@
         return prefix + String(n).padStart(4, "0");
       }
     }
-    if (CHUMASH_ORD[val]) return "2_" + String(CHUMASH_ORD[val]).padStart(3, "0");
-    if (MONTH_ORD[val]) return "2_" + String(MONTH_ORD[val]).padStart(3, "0");
-    const pi = PARSHA_ORDER.indexOf(val);
-    if (pi !== -1) return "3_" + String(pi).padStart(3, "0");
+    if (CHUMASH_ORD[val]) return "2_" + String(Math.round(CHUMASH_ORD[val] * 10)).padStart(4, "0");
+    if (MONTH_ORD[val]) return "2_" + String(MONTH_ORD[val] * 10).padStart(4, "0");
+    const parCand = val.split(/\s*›\s*/)[0].replace(/^פרשת\s+|^פר['׳"]?\s+/, "").replace(/\s*\([^)]*\)\s*$/, "").replace("כי תבא", "כי תבוא").trim();
+    const pi = PARSHA_ORDER.indexOf(parCand);
+    if (pi !== -1) return "3_" + String(pi).padStart(3, "0") + "_" + val;
     const mNum = val.match(/^(?:\[|Drive\s*\[|סדרה\s*#?)(\d+)/i);
     if (mNum) return "4_" + String(Number(mNum[1])).padStart(4, "0") + "_" + val;
-    const yr = parseHebNum(val.replace(/.*?([תש][א-ת"'״׳]{2,4}).*/, "$1"));
-    if (yr !== null && /^(?:ת[א-ת]|ה'ת)/.test(val)) return "5_" + String(yr).padStart(5, "0");
+    const yrM = val.match(/(?:^|\s|מאמרים\s+)(עטר["'״׳]?ת|עת["'״׳]?ר|תנש["'״׳]?א|ת["'״׳]ש|תער["'״׳]?[א-ת]|ת[רש][א-ת"'״׳]{1,3}|ה'ת[א-ת"'״׳]{2,4})(?:\s|$|\))/);
+    if (yrM) {
+      const cleanYr = yrM[1].replace(/^ה'/, "").replace(/["'״׳]/g, "");
+      const yrVal = YEAR_ALIAS[cleanYr] || parseHebNum(cleanYr);
+      if (yrVal) return "5_" + String(yrVal).padStart(5, "0") + "_" + val;
+    }
     if (val.includes("כללי") || val.includes("שונות")) return "8_" + val;
     return "6_" + val;
   }
@@ -833,11 +839,18 @@
       const vMap = new Map();
       bookPool.forEach((x) => {
         const v = x.v || "כללי";
-        if (!vMap.has(v)) vMap.set(v, { cnt: 0, gids: new Set() });
-        vMap.get(v).cnt++;
-        vMap.get(v).gids.add(x.gid);
+        if (!vMap.has(v)) vMap.set(v, { cnt: 0, gids: new Set(), minVo: 9999999 });
+        const vi = vMap.get(v);
+        vi.cnt++;
+        vi.gids.add(x.gid);
+        if (typeof x.vo === "number" && x.vo < vi.minVo) vi.minVo = x.vo;
       });
-      const vols = sortValuesClean([...vMap.keys()]);
+      const vols = [...vMap.keys()].sort((a, b) => {
+        const oa = vMap.get(a).minVo, ob = vMap.get(b).minVo;
+        if (oa !== ob) return oa - ob;
+        const ka = drillSortKey(a), kb = drillSortKey(b);
+        return ka !== kb ? ka.localeCompare(kb, "en") : a.localeCompare(b, "he");
+      });
 
       // Auto-advance if only 1 trivial volume exists (like ניגוני חב"ד or ממשנת רבינו)
       if (vols.length === 1) {
@@ -877,11 +890,18 @@
       const secMap = new Map();
       volPool.forEach((x) => {
         const s = x.sec || x.t;
-        if (!secMap.has(s)) secMap.set(s, { cnt: 0, gids: new Set() });
-        secMap.get(s).cnt++;
-        secMap.get(s).gids.add(x.gid);
+        if (!secMap.has(s)) secMap.set(s, { cnt: 0, gids: new Set(), minMo: 9999999 });
+        const si = secMap.get(s);
+        si.cnt++;
+        si.gids.add(x.gid);
+        if (typeof x.mo === "number" && x.mo < si.minMo) si.minMo = x.mo;
       });
-      const secs = sortValuesClean([...secMap.keys()]);
+      const secs = [...secMap.keys()].sort((a, b) => {
+        const oa = secMap.get(a).minMo, ob = secMap.get(b).minMo;
+        if (oa !== ob) return oa - ob;
+        const ka = drillSortKey(a), kb = drillSortKey(b);
+        return ka !== kb ? ka.localeCompare(kb, "en") : a.localeCompare(b, "he");
+      });
 
       // Skip Step 5 ONLY when sec === v OR when inside Chazaros / Nigunim / PDF singletons
       const isSingletonCollection =

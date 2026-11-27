@@ -1044,8 +1044,17 @@ def build():
             cat, r, b = "ספרים", REBBE_RAYYATZ, 'ספרי המאמרים וקונטרסים'
             vol = years[0] if years else "מאמרים"
         elif "מאמר" in title or "ד\"ה" in title or "דה " in title:
-            cat, r, b = "ספרים", REBBE_LUBAVITCH, 'ספר המאמרים מלוקט'
-            vol = years[0] if years else (PARSHA_TO_CHUMASH.get(parsha, "מאמרים"))
+            if yn and yn < 5680:
+                cat, r, b = "ספרים", REBBE_RASHAB, 'ספרי המאמרים וקונטרסים'
+                vol = f"ספר המאמרים {years[0]}" if years else "מאמרים"
+                if "וידעת" in blob:
+                    sec = 'וידעת - מאסקאווא (תרנ"ז)'
+            elif (yn and yn < 5710) or ("באתי לגני" in blob and yn == 5710):
+                cat, r, b = "ספרים", REBBE_RAYYATZ, 'ספרי המאמרים וקונטרסים'
+                vol = f"ספר המאמרים {years[0]}" if years else "מאמרים"
+            else:
+                cat, r, b = "ספרים", REBBE_LUBAVITCH, 'ספר המאמרים מלוקט'
+                vol = years[0] if years else (PARSHA_TO_CHUMASH.get(parsha, "מאמרים"))
         elif "התוועדות" in blob:
             cat, b = "חזרות והתוועדויות", "התוועדויות חסידים וזיכרונות"
             vol = HOLIDAY_TO_MONTH.get(parsha, "") or (years[0] if years else "התוועדויות")
@@ -1768,7 +1777,7 @@ def build():
             return 'פנים בפנים (תרס"ז)'
         if "omdin" in low_s:
             return 'אין עומדין (תרס"ז)'
-        if "hachodesh" in low_s:
+        if "hachodesh" in low_s or "המשך החודש" in s:
             return 'החודש הזה'
         if "vayolech" in low_s:
             return "ויולך ה'"
@@ -1890,12 +1899,20 @@ def build():
                     it["mas"] = mas
                 if ma in H66_IDX:
                     it["mo"] = H66_IDX[ma]
+            vname = it.get("v", "")
+            v_head = vname.split(" — ")[0].split(" - ")[0].replace(' (י"ט–כ"ד)', "").strip()
+            v_canon = canon_h66_maamar(v_head)
+            if v_canon in H66_IDX:
+                it["vo"] = H66_IDX[v_canon]
+            elif it.get("mo"):
+                it["vo"] = it["mo"]
 
         elif bk == 'המשך תער"ב (ע"ב)':
             h72_ord = {
                 'סימנים מ"ט–פ"ח': 1, 'מצה זו': 2, 'שופטים': 3, 'כי תצא': 4, 'כי תבא': 5,
                 'אתם נצבים': 6, 'ביום השמיני עצרת': 7, 'ויגש - העת"ר': 8, 'יהודה אתה - העת"ר': 9,
-                'ואלה שמות העת"ר': 10, 'וידבר אלקים העת"ר': 11, 'ועתה ישראל': 12, 'סימנים שפ"ד–שצ"ט': 13,
+                'ואלה שמות העת"ר': 10, 'ואלה שמות העת"ר - וידבר אלקים העת"ר': 10,
+                'וידבר אלקים העת"ר': 11, 'ועתה ישראל': 12, 'סימנים שפ"ד–שצ"ט': 13, 'כללי (ע"ב)': 14,
             }
             if src == "heichal":
                 it["ma"] = re.sub(r'\s*-\s*\d+\s*$', '', t).strip()
@@ -1903,9 +1920,38 @@ def build():
                 it["ma"] = it.get("v") or "כללי"
             if it["ma"] in h72_ord:
                 it["mo"] = h72_ord[it["ma"]]
+            vname = it.get("v", "")
+            if vname in h72_ord:
+                it["vo"] = h72_ord[vname]
+
+        elif bk == 'דרך מצותיך':
+            dm_ord = {
+                'מילה': 1, 'ציצית': 2, 'זכירת ומחיית עמלק': 3, 'יעוד ופדיון אמה העבריה': 4,
+                'תגלחת המצורע': 5, 'האמנת אלקות': 6, 'השבתת חמץ ואכילת מצה': 7,
+                'דין עבד עברי': 8, 'מינוי מלך': 9, "אחדות ה'": 10, "מצות אחדות ה'": 10,
+                'אהבת ישראל': 11, 'שרש מצות התפלה': 12,
+            }
+            vname = it.get("v", "")
+            if vname in dm_ord:
+                it["vo"] = dm_ord[vname]
+
+        elif bk in ('תורה אור', 'לקוטי תורה'):
+            chumash_vo = {
+                'ספר בראשית': 1, 'ספר שמות': 2, 'חנוכה ופורים': 3,
+                'ספר ויקרא': 1, 'ספר במדבר': 2, 'ספר דברים': 3,
+                'ספר דברים / שיר השירים': 4, 'ימים טובים — מועדים': 5,
+                'שיר השירים': 6, 'שיר השירים / אלול': 7,
+            }
+            vname = it.get("v", "")
+            if vname in chumash_vo:
+                it["vo"] = chumash_vo[vname]
 
         elif bk == 'ספרי המאמרים וקונטרסים':
             vname = it.get("v", "")
+            if 'קונטרסים ב' in vname:
+                it["vo"] = 57005
+            elif it.get("yn"):
+                it["vo"] = it["yn"] * 10
             if src == "heichal":
                 stem = re.sub(r'\s*-\s*\d+\s*$', '', t).strip()
                 if stem == "כל המאריך באחד, אהללה ה' בחיי":
@@ -1920,10 +1966,25 @@ def build():
                 elif "veavdi" in lt: it["ma"] = 'ודויד עבדי (תשל"ב)'
                 elif "vechozakta" in lt or "vechozokto" in lt: it["ma"] = 'וחזקת (תשכ"ח)'
                 elif "zeh hayom" in lt: it["ma"] = 'זה היום (תשי"א)'
+            elif src == "video_chasidut":
+                if "וידעת" in t:
+                    it["ma"] = 'וידעת - מאסקאווא (תרנ"ז)'
+                elif "באתי לגני" in t:
+                    it["ma"] = 'באתי לגני - תש"י (תש"י)'
             elif src == "gdrive":
                 lt = t.lower()
                 if "veyada" in lt:
                     it["ma"] = 'וידעת - מאסקאווא (תרנ"ז)'
+                elif vname == 'ספר המאמרים תרנ"ז' and it.get("sec") == "001":
+                    it["ma"] = 'מאמרי תרנ"ז (סדרה ב\')'
+                elif "5665 rosh hashana" in lt:
+                    it["ma"] = 'ראש השנה (תרס"ה)'
+                elif "5665 [001] shavuos" in lt:
+                    it["ma"] = 'חג השבועות א\' (תרס"ה)'
+                elif "5665 [002] shavuos" in lt:
+                    it["ma"] = 'חג השבועות ב\' (תרס"ה)'
+                elif vname == 'ספר המאמרים תש"ח' and it.get("sec") == "5708":
+                    it["ma"] = 'מאמרי תש"ח — כללי'
                 elif "vechol" in lt or "וכל העם" in t:
                     it["ma"] = 'וכל העם (תרס"ה)'
                 elif "תדמיוני" in t:
@@ -1941,6 +2002,15 @@ def build():
                 else:
                     raw_s = it.get("sec") or it.get("v") or "כללי"
                     it["ma"] = f"{raw_s} ({vname.replace('ספר המאמרים ', '')})" if "ספר המאמרים " in vname and vname not in raw_s else raw_s
+            if it.get("ma") and it.get("yn"):
+                m_off = 50
+                lt_m = it["ma"]
+                if any(k in lt_m for k in ["ר\"ה", "ראש השנה", "תשרי", "לולב", "שמיני"]): m_off = 10
+                elif any(k in lt_m for k in ["שובה", "אלה", "ויגש", "ויחלום"]): m_off = 20
+                elif any(k in lt_m for k in ["באתי", "שבט", "אדר", "פורים", "זכור"]): m_off = 30
+                elif any(k in lt_m for k in ["החודש", "פסח", "מצה"]): m_off = 40
+                elif any(k in lt_m for k in ["שבועות", "הר סיני", "במדבר", "נשא", "צאינה"]): m_off = 60
+                it["mo"] = it["yn"] * 100 + m_off
 
     # Sort unified cleanly so tracks within each gid are in exact ascending order!
     source_priority = {
