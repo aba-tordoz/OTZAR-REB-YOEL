@@ -150,21 +150,21 @@ PARSHIYOS = [
     ("וישלח", "ספר בראשית", ["וישלח", "vayishlach"]),
     ("וישב", "ספר בראשית", ["וישב", "vayeshev", "vayeishev"]),
     ("מקץ", "ספר בראשית", ["מקץ", "mikeitz", "miketz"]),
-    ("ויגש", "ספר בראשית", ["ויגש", "vayigash"]),
+    ("ויגש", "ספר בראשית", ["ויגש", "vayigash", "vaygash"]),
     ("ויחי", "ספר בראשית", ["ויחי", "vayechi"]),
     ("שמות", "ספר שמות", ["ואלה שמות", "פרשת שמות", "shemos", "shmos", "shimos"]),
-    ("וארא", "ספר שמות", ["וארא", "vaeira", "vaera"]),
-    ("בא", "ספר שמות", ["פרשת בא", "parshas bo", "bo 57", "bo7"]),
+    ("וארא", "ספר שמות", ["וארא", "vaeira", "vaera", "va'era"]),
+    ("בא", "ספר שמות", ["פרשת בא", "parshas bo", "bo --", "bo 57", "bo7"]),
     ("בשלח", "ספר שמות", ["בשלח", "beshalach"]),
     ("יתרו", "ספר שמות", ["יתרו", "yisro", "yitro"]),
-    ("משפטים", "ספר שמות", ["משפטים", "mishpatim"]),
+    ("משפטים", "ספר שמות", ["משפטים", "mishpatim", "mishpotim"]),
     ("תרומה", "ספר שמות", ["תרומה", "terumah", "trumah", "trumoh"]),
     ("תצוה", "ספר שמות", ["תצוה", "תצווה", "tetzaveh", "tetsaveh"]),
     ("כי תשא", "ספר שמות", ["כי תשא", "ki sisa", "ki tisa", "kisisa"]),
     ("ויקהל", "ספר שמות", ["ויקהל", "vayakhel"]),
-    ("פקודי", "ספר שמות", ["פקודי", "pekudei"]),
+    ("פקודי", "ספר שמות", ["פקודי", "pekudei", "pikudei"]),
     ("ויקרא", "ספר ויקרא", ["פרשת ויקרא", "vayikra"]),
-    ("צו", "ספר ויקרא", ["פרשת צו", "parshas tzav", "tzav 57"]),
+    ("צו", "ספר ויקרא", ["פרשת צו", "parshas tzav", "tzav --", "tzav 57"]),
     ("שמיני", "ספר ויקרא", ["שמיני", "shemini", "shmini"]),
     ("תזריע", "ספר ויקרא", ["תזריע", "tazria", "tazriah"]),
     ("מצורע", "ספר ויקרא", ["מצורע", "מצרע", "metzora"]),
@@ -175,53 +175,66 @@ PARSHIYOS = [
     ("בחוקותי", "ספר ויקרא", ["בחוקותי", "בחקתי", "בחוקתי", "bechukosai", "bechukotai", "bichukosay"]),
     ("במדבר", "ספר במדבר", ["פרשת במדבר", "bamidbar"]),
     ("נשא", "ספר במדבר", ["פרשת נשא", "naso", "noso"]),
-    ("בהעלותך", "ספר במדבר", ["בהעלותך", "בהעלתך", "behaalosecha", "behalotcha"]),
+    ("בהעלותך", "ספר במדבר", ["בהעלותך", "בהעלתך", "behaalosecha", "beha'alosecha", "behalotcha"]),
     ("שלח", "ספר במדבר", ["שלח לך", "פרשת שלח", "shelach", "shlach"]),
     ("קרח", "ספר במדבר", ["קרח", "קורח", "korach"]),
     ("חוקת", "ספר במדבר", ["חוקת", "חקת", "chukas", "chukat"]),
     ("בלק", "ספר במדבר", ["בלק", "balak"]),
     ("פנחס", "ספר במדבר", ["פנחס", "פינחס", "pinchas"]),
-    ("מטות", "ספר במדבר", ["מטות", "matos", "matot"]),
+    ("מטות", "ספר במדבר", ["מטות", "matos", "matot", "mattos"]),
     ("מסעי", "ספר במדבר", ["מסעי", "masei"]),
     ("דברים", "ספר דברים", ["פרשת דברים", "devarim", "devorim", "divarim"]),
-    ("ואתחנן", "ספר דברים", ["ואתחנן", "vaeschanan", "vaetchanan", "voeschanon"]),
+    ("ואתחנן", "ספר דברים", ["ואתחנן", "vaeschanan", "va'eschanan", "vaetchanan", "voeschanon"]),
     ("עקב", "ספר דברים", ["עקב", "eikev", "ekev"]),
     ("ראה", "ספר דברים", ["פרשת ראה", "reeh", "reei", "re'eh"]),
     ("שופטים", "ספר דברים", ["שופטים", "shoftim"]),
-    ("כי תצא", "ספר דברים", ["כי תצא", "ki seitzei", "kiseitzei", "kiteitzei"]),
+    ("כי תצא", "ספר דברים", ["כי תצא", "ki seitzei", "ki seitze", "kiseitzei", "kiteitzei"]),
     ("כי תבוא", "ספר דברים", ["כי תבוא", "כי תבא", "ki savo", "kisavo"]),
     ("נצבים", "ספר דברים", ["נצבים", "ניצבים", "nitzavim", "nitavim"]),
     ("וילך", "ספר דברים", ["וילך", "vayeilech", "vaylach"]),
-    ("האזינו", "ספר דברים", ["האזינו", "haazinu", "ha'ahzinu"]),
-    ("וזאת הברכה", "ספר דברים", ["וזאת הברכה", "זאת הברכה", "vezos haberacha", "vzos"]),
+    ("האזינו", "ספר דברים", ["האזינו", "haazinu", "ha'azinu", "ha'ahzinu"]),
+    ("וזאת הברכה", "ספר דברים", ["וזאת הברכה", "זאת הברכה", "vezos haberacha", "ve'zos ha'beracha", "vzos"]),
 ]
 PARSHA_TO_CHUMASH = {p[0]: p[1] for p in PARSHIYOS}
 
 HOLIDAYS = [
-    ("ראש השנה", "תשרי", ["ראש השנה", 'ר"ה', "תקעו", "rosh hashana", "rosh hashonah"]),
+    ("ראש השנה", "תשרי", ["ראש השנה", 'ר"ה', "תקעו", "rosh hashana", "rosh hashonah", "rosh hasonah"]),
     ("יום כיפור", "תשרי", ["יום כיפור", 'יו"כ', 'יוה"כ', "yom kippur", "yom kipur"]),
-    ("סוכות ושמיני עצרת", "תשרי", ["סוכות", "בסוכות", "לולב", "שמיני עצרת", "שמחת תורה", "sukkos", "sukkot", "sokkus", "simchas torah", "st57"]),
-    ('י"ט כסלו', "כסלו", ['י"ט כסלו', "יט כסלו", "פדה בשלום", "19 kislev", "yud tes kislev", "podoh bsholom", "pada b"]),
-    ("חנוכה", "כסלו", ["חנוכה", "נר חנוכה", "chanukah", "chanuka", "hanukkah", "chanika"]),
+    ("סוכות ושמיני עצרת", "תשרי", ["סוכות", "בסוכות", "לולב", "שמיני עצרת", "שמחת תורה", "sukkos", "sukkot", "sukkas", "sokkus", "simchas torah", "st57"]),
+    ("חודש חשון", "חשון", ["mar cheshvan", "כ' מרחשון", "כ' חשון", "ר\"ח חשון"]),
+    ('י"ט כסלו', "כסלו", ['י"ט כסלו', "יט כסלו", "פדה בשלום", "19 kislev", "19 kislav", "yud tes kislev", "podoh bsholom", "pada b"]),
+    ("חנוכה", "כסלו", ["חנוכה", "נר חנוכה", "chanukah", "chanuka", "hanukkah", "chanika", "24 kislev"]),
     ('כ"ד טבת', "טבת", ['כ"ד טבת', "כד טבת", "24 teves"]),
-    ('יו"ד שבט', "שבט", ['י" שבט', "י' שבט", 'יו"ד שבט', "י שבט", "באתי לגני", "yud shvat", "10 shvat", "basi lgani", "basi legan"]),
+    ('יו"ד שבט', "שבט", ["י' שבט", 'י" שבט', 'יו"ד שבט', "י שבט", "באתי לגני", "yud shvat", "10 shvat", "10 shevat", "basi lgani", "basi legan"]),
+    ('ט"ו בשבט', "שבט", ['ט"ו בשבט', "טו בשבט", "15 shevat", "15 shvat"]),
+    ('ז\' אדר', "אדר", ["7 adar", "ז' אדר", "ז אדר"]),
+    ("פרשת החודש", "אדר", ["פרשת החודש"]),
     ("פורים", "אדר", ["פורים", "בלילה ההוא", "עמלק", "זכור", "purim", "balayla hahu", "balaylah"]),
-    ("פסח", "ניסן", ["פסח", "מצה", "היא שעמדה", "כי ישאלך", "פסח שני", "pesach", "passover", "shabbos hagodol", "achroin shel pesach"]),
-    ('י"א ניסן', "ניסן", ['י"א ניסן', "יא ניסן", "11 nissan", "yud alef nissan"]),
-    ('ל"ג בעומר', "אייר", ['ל"ג בעומר', "לג בעומר", "lag baomer", "lag buomer", "lah buomer"]),
+    ("פסח", "ניסן", ["פסח", "מצה", "היא שעמדה", "כי ישאלך", "פסח שני", "שבת הגדול", "pesach", "passover", "shabbos hagodol", "shabbos hagadol", "achroin shel pesach", "acharon shel pesach"]),
+    ('י"א ניסן', "ניסן", ['י"א ניסן', "יא ניסן", "11 nissan", "yud alef nissan", "yud alef nisan", "yud nissan", "yud nisan"]),
+    ('ל"ג בעומר', "אייר", ['ל"ג בעומר', "לג בעומר", "רשב\"י", "rashbi", "lag baomer", "lag b_omer", "lag buomer", "lah buomer"]),
     ("שבועות", "סיון", ["שבועות", "מתן תורה", "בחודש השלישי", "shavuos", "shavuot", "bachodesh hashlishi"]),
-    ('י"ב-י"ג תמוז', "תמוז", ['י"ב תמוז', "יב תמוז", 'י"ג תמוז', "12 tammuz", "12 de tamuz", "13 tammuz"]),
+    ('י"ב-י"ג תמוז', "תמוז", ['י"ב תמוז', "יב תמוז", 'י"ג תמוז', "יג תמוז", "12 tammuz", "12 de tamuz", "13 tammuz", "12th & 13th"]),
     ("ג' תמוז", "תמוז", ["ג' תמוז", "ג תמוז", "3 tammuz", "gimmel tammuz"]),
-    ("בין המצרים ותשעה באב", "אב", ["בין המצרים", "תשעה באב", "ט' באב", "tisha bav", "bein hametzarim", "menachem av"]),
+    ("בין המצרים ותשעה באב", "אב", ["בין המצרים", "ימי המצרים", "תשעה באב", "ט' באב", "17 tammuz", "tisha bav", "bein hametzarim", "menachem av"]),
     ('ט"ו באב', "אב", ['ט"ו באב', "טו באב", "15 av"]),
     ('ח"י אלול', "אלול", ['ח"י אלול', "חי אלול", "18 elul", "chai elul"]),
+    ("חודש אלול", "אלול", ["חודש אלול", "י\"א אלול"]),
     ("ו' אב (יארצייט ר' יואל)", "אב", ["ו' מנחם אב", "ו׳ מנחם אב", "יארצייט של ר' יואל", "סעודת שלושים"]),
 ]
 HOLIDAY_TO_MONTH = {h[0]: h[1] for h in HOLIDAYS}
 HEB_MONTHS = ["תשרי", "חשון", "כסלו", "טבת", "שבט", "אדר", "ניסן", "אייר", "סיון", "תמוז", "אב", "אלול"]
 
 def detect_parsha_or_holiday(*texts):
-    blob = " ".join(t for t in texts if t).lower().replace("''", '"').replace("״", '"').replace("׳", "'")
+    blob = (
+        " ".join(t for t in texts if t)
+        .lower()
+        .replace("''", '"')
+        .replace("״", '"')
+        .replace("”", '"')
+        .replace("׳", "'")
+        .replace("’", "'")
+    )
     for name, _, keys in PARSHIYOS:
         for k in keys:
             if k in blob:
@@ -401,6 +414,8 @@ def extract_ls_chelek_from_text(text):
         r'(?:לקו"ש|לקוטי\s+שיחות|ליקוטי\s+שיחות)\s*,?\s*(?:חלק|כרך|ח(?!\s+שיח))\s*["\']?\s*([א-ת]{1,2}(?:["\'][א-ת])?|[א-ת]|\d{1,2})["\']?(?=\s|,|;|$|[-–.])',
         norm,
     )
+    if not m and any(k in norm for k in ['לקו"ש', "לקוטי שיחות", "ליקוטי שיחות"]):
+        m = re.search(r'(?:^|\s)חלק\s+([א-ת]{1,2}(?:["\'][א-ת])?|[א-ת]|\d{1,2})["\']?(?=\s|,|;|$|[-–.])', norm)
     if not m:
         return ""
     val = m.group(1)
@@ -932,10 +947,14 @@ def build():
                 cat, r, b = "ספרים", REBBE_ZAKEN, 'תניא — לקוטי אמרים'
                 v = clean_tanya_perek(title) or "שיעורים כלליים"
                 ts = "Study Chassidus (אנגלית)"
+            elif "what is chassidus" in low_all or "inyana shel toras hachassidus" in low_all:
+                cat, r, b = "ספרים", REBBE_LUBAVITCH, "קונטרסים"
+                v = "קונטרס ענינה של תורת החסידות"
+                stem = "קונטרס ענינה של תורת החסידות"
             elif "haumnom" in low_all:
                 cat, r, b = "ספרים", REBBE_RASHAB, 'ספרי המאמרים וקונטרסים'
                 v = 'ספר המאמרים תרמ"ג'
-            elif any(k in low_all for k in ["basi legani", "zeh hayom", "veavdi", "vechozakta", "vechozokto"]):
+            elif any(k in low_all for k in ["basi legani", "zeh hayom", "veavdi", "vechozakta", "vechozokto", "vaera 5735"]):
                 cat, r, b = "ספרים", REBBE_LUBAVITCH, 'ספר המאמרים מלוקט'
                 v = "לפי מועדי השנה" if ("basi legani" in low_all or "zeh hayom" in low_all) else "מאמרים מלוקטים — כללי"
             elif "chanukah" in low_all:
@@ -978,7 +997,23 @@ def build():
         stem = strip_part_for_series_stem(title)
         cat, r, b, vol, sec, ts = "", "", "", "כללי", stem, ""
 
-        if "תניא" in blob or "ספר של בינונים" in blob or "שער היחוד" in blob or "אגרת התשובה" in blob or "אגרת הקודש" in blob:
+        if "לקוטי שיחות" in blob or "ליקוטי שיחות" in blob or 'לקו"ש' in blob or "לקו”ש" in blob or "הדרן" in blob:
+            cat, r = "ספרים", REBBE_LUBAVITCH
+            if "הדרן" in blob:
+                b = 'הדרנים'
+                vol = "הדרנים על הרמב\"ם" if "רמב" in blob else "הדרנים"
+            else:
+                b = 'ליקוטי שיחות'
+                vol = extract_ls_chelek_from_text(blob) or PARSHA_TO_CHUMASH.get(parsha, "שיחות שונות")
+        elif "דרך מצוותיך" in blob or "דרך מצותיך" in blob:
+            cat, r, b = "ספרים", REBBE_ZZ, "דרך מצותיך"
+            vol = "מצות אחדות ה'" if "אחדות" in blob else stem
+            sec = vol
+        elif "קונטרס" in blob or "קונטרוס" in blob:
+            cat, r, b = "ספרים", REBBE_LUBAVITCH, "קונטרסים"
+            vol = "קונטרס ענינה של תורת החסידות" if "ענינה" in blob else stem
+            sec = vol
+        elif "תניא" in blob or "ספר של בינונים" in blob or "שער היחוד" in blob or "אגרת התשובה" in blob or "אגרת הקודש" in blob:
             cat, r = "ספרים", REBBE_ZAKEN
             if "שער היחוד" in blob: b = 'תניא — שער היחוד והאמונה'
             elif "אגרת התשובה" in blob: b = 'תניא — אגרת התשובה'
@@ -1008,14 +1043,6 @@ def build():
         elif 'ריי"צ' in blob:
             cat, r, b = "ספרים", REBBE_RAYYATZ, 'ספרי המאמרים וקונטרסים'
             vol = years[0] if years else "מאמרים"
-        elif "לקוטי שיחות" in blob or "ליקוטי שיחות" in blob or 'לקו"ש' in blob or "לקו”ש" in blob or "הדרן" in blob:
-            cat, r = "ספרים", REBBE_LUBAVITCH
-            if "הדרן" in blob:
-                b = 'הדרנים'
-                vol = "הדרנים על הרמב\"ם" if "רמב" in blob else "הדרנים"
-            else:
-                b = 'ליקוטי שיחות'
-                vol = extract_ls_chelek_from_text(blob) or PARSHA_TO_CHUMASH.get(parsha, "שיחות שונות")
         elif "מאמר" in title or "ד\"ה" in title or "דה " in title:
             cat, r, b = "ספרים", REBBE_LUBAVITCH, 'ספר המאמרים מלוקט'
             vol = years[0] if years else (PARSHA_TO_CHUMASH.get(parsha, "מאמרים"))
@@ -1104,15 +1131,28 @@ def build():
         years, yn, decs = extract_years(title, m.get("slug", ""))
         parsha = detect_parsha_or_holiday(title, m.get("slug", ""))
         cat, r, b, vol, sec = "סוגיות בחסידות", "", "מושגים וסוגיות בחסידות", "שונות", title
+        norm_title = title.replace("״", '"').replace("”", '"').replace("׳", "'").replace("’", "'")
         norm_mekor = mekor.replace("״", '"').replace("”", '"').replace("׳", "'").replace("’", "'")
         if norm_mekor and ('לקו"ש' in norm_mekor or "לקוטי שיחות" in norm_mekor or "ליקוטי שיחות" in norm_mekor):
             cat, r, b = "ספרים", REBBE_LUBAVITCH, 'ליקוטי שיחות'
             vol = extract_ls_chelek_from_text(norm_mekor) or "שיחות לפי פרשה / מועד"
             sec = parsha or title
+        elif "אגרת התשובה" in norm_title or "שער היחוד" in norm_title:
+            cat, r = "ספרים", REBBE_ZAKEN
+            b = 'תניא — אגרת התשובה' if "אגרת התשובה" in norm_title else 'תניא — שער היחוד והאמונה'
+            vol, sec = "כללי", title
+        elif "likutei torah" in m.get("slug", "").replace("_", " ").lower() or "אני לדודי" in norm_title:
+            cat, r, b, vol, sec = "ספרים", REBBE_ZAKEN, 'לקוטי תורה', 'שיר השירים / אלול', 'אני לדודי'
+        elif "התוועדות" in norm_title:
+            cat, b = "חזרות והתוועדויות", "התוועדויות חסידים וזיכרונות"
+            vol = HOLIDAY_TO_MONTH.get(parsha, "") or (years[0] if years else "התוועדויות")
+            sec = parsha or title
         elif parsha and parsha in PARSHA_TO_CHUMASH:
             cat, b, vol, sec = "פרשיות השבוע", PARSHA_TO_CHUMASH[parsha], parsha, title
         elif parsha and parsha in HOLIDAY_TO_MONTH:
             cat, b, vol, sec = "ענינא דיומא", HOLIDAY_TO_MONTH[parsha], parsha, title
+        elif "תשובה" in norm_title:
+            vol = "מצות התשובה"
 
         unified.append({
             "id": f"mon_{idx}", "t": title,
@@ -1495,7 +1535,10 @@ def build():
             elif top == "006-chzoroh":
                 cat, b = "חזרות והתוועדויות", "חזרות על התוועדויות הרבי"
                 p1 = path[1] if len(path) > 1 else ""
-                yr_str = num_to_hebrew_year(int(p1)) if p1.isdigit() else (years[0] if years else p1 or "שנים שונות")
+                if p1.lower() == "other":
+                    yr_str = "שנים שונות"
+                else:
+                    yr_str = num_to_hebrew_year(int(p1)) if p1.isdigit() else (years[0] if years else p1 or "שנים שונות")
                 vol = yr_str
                 # Group A/B sides of the same Chazara tape (e.g. '1.wav' & '1 b.wav')
                 tape_stem = re.sub(r'(?:[\s_-]+[ab]|_side_[ab]|\s*\([ab]\))$', '', clean_name, flags=re.I).strip()
@@ -1504,6 +1547,7 @@ def build():
                 gid_key = f"gd_chz_{'/'.join(path)}_{tape_stem.lower()}"
             elif top == "008-speeches":
                 p1 = (path[1] if len(path) > 1 else "").lower()
+                low_fn = clean_name.lower()
                 if "bimishnas" in p1:
                     cat, b, vol, sec = "סוגיות בחסידות", "במשנת רבינו", "שיעורי במשנת רבינו", "סדרת במשנת רבינו (115 שיעורים)"
                     ser = "סדרת במשנת רבינו (Google Drive)"
@@ -1518,19 +1562,62 @@ def build():
                     sec = f"שיעורים על פרשת {par_name}" if parsha else clean_name
                     ser = "פרשת השבוע (Google Drive)"
                     gid_key = f"gd_par_{par_name}_{path[1] if len(path) > 1 else ''}"
-                elif any(k in p1 for k in ["adar", "chanukah", "pesach", "lag", "cheshvan", "menachem", "achroin", "simchas"]) or (parsha and parsha in HOLIDAY_TO_MONTH):
+                elif "igeres" in low_fn:
+                    cat, r, b, vol, sec = "ספרים", REBBE_ZAKEN, 'תניא — אגרת התשובה', "כללי", "אגרת התשובה"
+                elif "siyum" in p1 or "rambam" in low_fn:
+                    cat, b, vol, sec = "סוגיות בחסידות", "מושגים וסוגיות בחסידות", "סיום הרמב\"ם", "סיום הרמב\"ם (טורונטו)"
+                elif "taammei" in p1 or "taamaei" in low_fn:
+                    cat, b, vol, sec = "סוגיות בחסידות", "מושגים וסוגיות בחסידות", "טעמי המצוות", "טעמי המצוות"
+                elif "kinus" in p1 or "kinus hashluchim" in low_fn or "shlichus" in low_fn:
+                    cat, b, vol, sec = "סוגיות בחסידות", "מושגים וסוגיות בחסידות", "כינוס השלוחים וענייני שליחות", clean_name
+                elif "logical of existence" in low_fn:
+                    cat, b, vol, sec = "סוגיות בחסידות", "מושגים וסוגיות בחסידות", "אמונת ה' וקיום המצוות", clean_name
+                elif parsha and parsha in HOLIDAY_TO_MONTH:
                     cat = "ענינא דיומא"
-                    b = HOLIDAY_TO_MONTH.get(parsha, "מועדי השנה")
-                    vol = parsha or (path[1] if len(path) > 1 else "מועדים")
+                    b = HOLIDAY_TO_MONTH[parsha]
+                    vol = parsha
                     sec = clean_name
+                elif "after simchas torah" in p1 or "v_yaakov" in low_fn:
+                    cat, b, vol, sec = "ענינא דיומא", "תשרי", "סוכות ושמיני עצרת", "ויעקב הלך לדרכו"
+                elif any(k in p1 for k in ["adar", "chanukah", "pesach", "lag", "cheshvan", "menachem", "achroin", "simchas", "shevat", "shavuos", "tammuz", "rosh", "sivan", "nisan", "av"]):
+                    cat = "ענינא דיומא"
+                    if "adar" in p1: b, vol = "אדר", "ז' אדר" if "7 adar" in low_fn else "חודש אדר"
+                    elif "cheshvan" in p1: b, vol = "חשון", "חודש חשון"
+                    elif "chanukah" in p1: b, vol = "כסלו", "חנוכה"
+                    elif "shevat" in p1: b, vol = "שבט", "חודש שבט"
+                    elif any(k in p1 for k in ["pesach", "achroin", "nisan"]): b, vol = "ניסן", "אחרון של פסח" if "achr" in p1 else ("פסח" if "pesach" in p1 else 'י"א ניסן')
+                    elif "sivan" in p1 or "shavuos" in p1: b, vol = "סיון", "שבועות וחודש סיון"
+                    elif "tammuz" in p1: b, vol = "תמוז", "ימי תמוז"
+                    else: b, vol = "אב", "כ' מנחם אב" if "20" in low_fn or "chaf" in p1 else "חודש אב"
+                    sec = clean_name
+                elif "10 kislev" in low_fn:
+                    cat, b, vol, sec = "ענינא דיומא", "כסלו", "י' כסלו", "י' כסלו"
+                elif low_fn == "elul":
+                    cat, b, vol, sec = "ענינא דיומא", "אלול", "חודש אלול", "חודש אלול"
+                elif "shabbos mevorchim nissan" in low_fn:
+                    cat, b, vol, sec = "ענינא דיומא", "ניסן", "שבת מברכים ניסן", clean_name
+                elif "shabbos mevorchim sivan" in low_fn or "12 sivan" in low_fn:
+                    cat, b, vol, sec = "ענינא דיומא", "סיון", "שבועות וחודש סיון", clean_name
+                elif "hachozrim" in p1:
+                    cat, b, vol, sec = "חזרות והתוועדויות", "התוועדויות חסידים וזיכרונות", "זכרונות חוזרים", "זכרונות חוזרים"
+                elif "pigishah" in p1:
+                    cat, b, vol, sec = "חזרות והתוועדויות", "התוועדויות חסידים וזיכרונות", "שיחות וזכרונות", clean_name
+                elif "nitul" in low_fn:
+                    cat, b, vol, sec = "חזרות והתוועדויות", "התוועדויות חסידים וזיכרונות", "סיפורי חסידים וזכרונות", clean_name
+                elif "texes" in p1 or "yuston" in low_fn:
+                    cat, b, vol, sec = "חזרות והתוועדויות", "התוועדויות חסידים וזיכרונות", 'יוסטון — תשנ"ה', "יוסטון (תשנ\"ה)"
+                elif "vthh" in p1 or "tishray" in p1:
+                    cat, b, vol, sec = "חזרות והתוועדויות", "התוועדויות חסידים וזיכרונות", 'תשרי תשס"ט (ועד התלמידים)', "כינוס תשרי תשס\"ט"
+                elif "shonos" in p1 or "5765" in low_fn or "yom iuyn" in low_fn:
+                    cat, b, vol, sec = "חזרות והתוועדויות", "התוועדויות חסידים וזיכרונות", 'כינוסים וימי עיון (תשס"ה)', clean_name
                 else:
                     cat, b = "חזרות והתוועדויות", "התוועדויות חסידים וזיכרונות"
-                    vol = path[1] if len(path) > 1 else "כללי"
+                    vol = years[0] if years else "התוועדויות ושיחות"
                     sec = clean_name
             elif top == "009-Nosim BiYahdus":
                 cat, b = "סוגיות בחסידות", "מושגים וסוגיות בחסידות"
                 raw_tp = (path[1] if len(path) > 1 else "").lower()
-                vol = {"13 ikrim": "יג עיקרים", "achdus hashem": "אחדות ה'", "yisroel": "ישראל"}.get(raw_tp, path[1] if len(path) > 1 else "כללי")
+                vol = {"13 ikrim": 'י"ג עיקרים', "achdus hashem": "אחדות ה'", "yisroel": "ישראל"}.get(raw_tp, path[1] if len(path) > 1 else "כללי")
                 sec = vol
                 ser = f"{vol} (Google Drive)"
                 m_nb = re.search(r'(\d+)$', clean_name)
@@ -1540,9 +1627,29 @@ def build():
             else:
                 cat, b, vol, sec = "סוגיות בחסידות", "מושגים וסוגיות בחסידות", top or "שונות", clean_name
 
+            GD_MUSOGIM_HEB = {
+                "1 yisoday hachasidus b": "יסודות החסידות — חלק ב'",
+                "chidus hachasiduss a": "חידוש החסידות (ענינה של תורת החסידות) — חלק א'",
+                "chidus hachasiduss b": "חידוש החסידות (ענינה של תורת החסידות) — חלק ב'",
+                "choyvas haodam baolmoi a": "חובת האדם בעולמו — חלק א'",
+                "choyvas haodam baolmoi  b": "חובת האדם בעולמו — חלק ב'",
+                "chukim umishptim a": "חוקים ומשפטים — חלק א'",
+                "chukim umishptim b": "חוקים ומשפטים — חלק ב'",
+                "emunas hashem  b": "אמונת ה' — חלק ב'",
+                "kal yehudey bietzem tal' hbast a 1": "כל יהודי בעצם תלמיד הבעש\"ט — חלק א'",
+                "kal yehudey bietzem tal' hbast  b 1": "כל יהודי בעצם תלמיד הבעש\"ט — חלק ב'",
+                "yichuda iloah a": "ייחודא עילאה — חלק א'",
+                "yichuda iloah b": "ייחודא עילאה — חלק ב'",
+            }
             ctx_label = path[-1] if path else ""
+            musogim_heb = GD_MUSOGIM_HEB.get(clean_name.strip().lower(), "")
             if doc_title_override:
                 disp_title = doc_title_override
+            elif clean_name.lower() == "new text document.txt":
+                yr_doc = num_to_hebrew_year(int(path[1])) if len(path) > 1 and path[1].isdigit() else (path[1] if len(path) > 1 else "")
+                disp_title = f"רשימת וציוני חזרות — {yr_doc}" if yr_doc else "רשימת וציוני חזרות"
+            elif musogim_heb:
+                disp_title = musogim_heb
             elif len(clean_name) <= 14 or re.match(r'^[\d\sA-Ba-b_-]+$', clean_name):
                 disp_title = f"{ctx_label} — {clean_name}" if ctx_label else clean_name
             else:
@@ -1806,8 +1913,13 @@ def build():
                     it["mas"] = ['כל המאריך באחד (ת"ש)', "אהללה ה' בחיי (ת\"ש)"]
                 else:
                     it["ma"] = f"{stem} ({vname.replace('ספר המאמרים ', '')})" if "ספר המאמרים " in vname else stem
-            elif src == "podcast_study" and "haumnom" in t.lower():
-                it["ma"] = 'האומנם ישב (תרמ"ג)'
+            elif src == "podcast_study":
+                lt = t.lower()
+                if "haumnom" in lt: it["ma"] = 'האומנם ישב (תרמ"ג)'
+                elif "vaera 5735" in lt: it["ma"] = 'וארא (תשל"ה)'
+                elif "veavdi" in lt: it["ma"] = 'ודויד עבדי (תשל"ב)'
+                elif "vechozakta" in lt or "vechozokto" in lt: it["ma"] = 'וחזקת (תשכ"ח)'
+                elif "zeh hayom" in lt: it["ma"] = 'זה היום (תשי"א)'
             elif src == "gdrive":
                 lt = t.lower()
                 if "veyada" in lt:
