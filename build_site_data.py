@@ -1531,6 +1531,243 @@ def build():
                         if x["gid"] == g:
                             x["ser"] = f"סדרה {heb_l} (היכל מנחם)"
 
+    # --------------------------------------------------------------------------
+    # Canonical Maamar Tagging (`ma`, `mas`, `mo`) for books with multi-maamar series
+    # --------------------------------------------------------------------------
+    HEMSHECH_66_ORDER = [
+        'יו"ט של ר"ה',
+        'זה היום',
+        'שובה ישראל',
+        'ביום השמיני עצרת',
+        'ויכולו השמים',
+        'אלה תולדות נח',
+        "ויאמר ה' לך לך",
+        'ואברהם זקן',
+        'ויתן לך',
+        'ויצא',
+        'תחילת ההמשך — שיעורים ללא ציון מאמר',
+        'החודש הזה',
+        "ויולך ה'",
+        'זאת חוקת',
+        'כי עמך מקור חיים',
+        'אדם כי יקריב',
+        'אדם כי יהיה בעור',
+        'המשך החודש הזה — כללי',
+        'ושאבתם מים בששון',
+        'במדבר סיני',
+        'אז ישיר ישראל',
+        'כי מראש אמנה',
+        'כי המצוה',
+        "כי תבואו וגו' ושבתה",
+        'קדושים תהיו',
+        'כל השונה הלכות',
+        'אם בחוקותי תלכו',
+        'בשעה שהקדימו (תרס"ז)',
+        "אנכי ה' אלקיך (תרס\"ז)",
+        'פנים בפנים (תרס"ז)',
+        'אין עומדין (תרס"ז)',
+        'תקעו בחודש (תרס"ז)',
+        'בסוכות תשבו - ביום השמיני (תרס"ז)',
+        'היושבת בגנים (תרס"ז)',
+        'ומקנה רב',
+        "קדש ישראל לה' (תרס\"ח)",
+        'לפני "באתי לגני" (תשל"א)',
+    ]
+    H66_IDX = {name: i + 1 for i, name in enumerate(HEMSHECH_66_ORDER)}
+
+    def canon_h66_maamar(raw_name):
+        s = raw_name.strip()
+        low_s = s.lower()
+        exact_map = {
+            "זאת חקת": "זאת חוקת",
+            "אדם כי יהי' בעור": "אדם כי יהיה בעור",
+            "כי ידעתיו, ואברהם זקן": "ואברהם זקן",
+            "כי תבאו וגו' ושבתה": "כי תבואו וגו' ושבתה",
+            "אם בחקותי תלכו": "אם בחוקותי תלכו",
+            "בשעה שהקדימו - תרס\"ז": 'בשעה שהקדימו (תרס"ז)',
+            "תקעו בחודש - תרס\"ז": 'תקעו בחודש (תרס"ז)',
+            "בסוכות תשבו - ביום השמיני - תרס\"ז": 'בסוכות תשבו - ביום השמיני (תרס"ז)',
+            "היושבת בגנים - תרס\"ז": 'היושבת בגנים (תרס"ז)',
+            "קדש ישראל לה' - תרס\"ח": "קדש ישראל לה' (תרס\"ח)",
+            "כל השונה הלכות - תרס\"ז": "כל השונה הלכות",
+        }
+        if s in exact_map:
+            return exact_map[s]
+        if "beshah" in low_s or "bsha" in low_s:
+            return 'בשעה שהקדימו (תרס"ז)'
+        if "anochi" in low_s:
+            return "אנכי ה' אלקיך (תרס\"ז)"
+        if "panim" in low_s or "punim" in low_s:
+            return 'פנים בפנים (תרס"ז)'
+        if "omdin" in low_s:
+            return 'אין עומדין (תרס"ז)'
+        if "hachodesh" in low_s:
+            return 'החודש הזה'
+        if "vayolech" in low_s:
+            return "ויולך ה'"
+        if "chukas" in low_s or "chokat" in low_s or "chukat" in low_s:
+            return 'זאת חוקת'
+        if "imcha" in low_s or "emech" in low_s:
+            return 'כי עמך מקור חיים'
+        if "yakriv" in low_s or "adom ke ya" in low_s:
+            return 'אדם כי יקריב'
+        if "ihie beor" in low_s or "ki yihye" in low_s:
+            return 'אדם כי יהיה בעור'
+        if "veshav" in low_s or "vishav" in low_s:
+            return 'ושאבתם מים בששון'
+        if "bamidbar" in low_s:
+            return 'במדבר סיני'
+        if "yashir" in low_s:
+            return 'אז ישיר ישראל'
+        if "merosh" in low_s:
+            return 'כי מראש אמנה'
+        if "hashone" in low_s or "hasone" in low_s:
+            return 'כל השונה הלכות'
+        if "yut rh" in low_s or "yom tov" in low_s:
+            return 'יו"ט של ר"ה'
+        return s
+
+    for it in unified:
+        bk = it.get("b", "")
+        t = it.get("t", "")
+        src = it.get("src", "")
+        gid = it.get("gid", "")
+
+        if bk == 'המשך תרס"ו (ס"ו)':
+            ma = ""
+            mas = None
+            if src == "heichal":
+                stem = re.sub(r'\s*-\s*\d+\s*$', '', t).strip()
+                if stem == "החודש הזה, ויולך":
+                    ma, mas = "החודש הזה", ["החודש הזה", "ויולך ה'"]
+                elif stem == "ויולך ה' - זאת חקת":
+                    ma, mas = "ויולך ה'", ["ויולך ה'", "זאת חוקת"]
+                elif stem == "ואברהם זקן - ויתן לך":
+                    ma, mas = "ואברהם זקן", ["ואברהם זקן", "ויתן לך"]
+                else:
+                    ma = canon_h66_maamar(stem)
+            elif src == "gdrive":
+                if "019-024 Hachodesh [4]" in gid or "Hemshech Hachodesh-JEM" in gid or "019-024 Hachodesh [3]" in gid:
+                    m_tp = re.search(r'(?:—|- 00 -)\s*0*(\d{1,3})\s*(?:[-_\s]?[ABab]|\[|$)', t)
+                    if not m_tp:
+                        m_tp = re.match(r'^0*(\d{1,3})-[ABab]', t)
+                    tp = int(m_tp.group(1)) if m_tp else 0
+                    if 1 <= tp <= 7:
+                        ma = 'החודש הזה'
+                    elif 8 <= tp <= 14:
+                        ma = "ויולך ה'"
+                    elif tp == 15:
+                        ma = 'זאת חוקת'
+                    elif 16 <= tp <= 25:
+                        ma = 'כי עמך מקור חיים'
+                    elif 26 <= tp <= 31:
+                        ma = 'כל השונה הלכות'
+                    else:
+                        ma = 'המשך החודש הזה — כללי'
+                elif "001 (Yom-tov)-49" in gid:
+                    lt = t.lower()
+                    if "yom tov" in lt:
+                        ma = 'יו"ט של ר"ה'
+                    elif "vaichulu" in lt:
+                        ma = 'ויכולו השמים'
+                    elif "noach" in lt:
+                        ma = 'אלה תולדות נח'
+                    elif "vayolech" in lt or "vayoilech" in lt:
+                        ma = "ויולך ה'"
+                    elif "ki imcha" in lt:
+                        ma = 'כי עמך מקור חיים'
+                    elif "veshavsa" in lt:
+                        ma, mas = 'אדם כי יהיה בעור', ['אדם כי יהיה בעור', 'ושאבתם מים בששון']
+                    elif "adam ihie beor" in lt:
+                        ma = 'אדם כי יהיה בעור'
+                    elif "bamidbar" in lt:
+                        ma = 'במדבר סיני'
+                    elif "az yashir" in lt:
+                        ma = 'אז ישיר ישראל'
+                    elif "ki hamitzvah" in lt or "ki hamizvah" in lt:
+                        ma = 'כי המצוה'
+                    elif "umikne" in lt:
+                        ma = 'ומקנה רב'
+                    elif "bati legani" in lt:
+                        ma = 'לפני "באתי לגני" (תשל"א)'
+                    else:
+                        ma = 'תחילת ההמשך — שיעורים ללא ציון מאמר'
+                elif "010-11vavraham" in gid:
+                    ma, mas = "ואברהם זקן", ["ואברהם זקן", "ויתן לך"]
+                elif "010-Viavarahom" in gid:
+                    ma = "ואברהם זקן"
+                elif "001-Yut RH" in gid:
+                    ma = 'יו"ט של ר"ה'
+                elif "019-024 Hachodesh [1(-old)]" in gid or ("019-Hachodesh" in gid and not ("hachodesh" in t.lower() or "pg 16" in t.lower())):
+                    ma = 'המשך החודש הזה — כללי'
+                elif "053-56 Bshoah" in gid:
+                    ma = canon_h66_maamar(it.get("ser", "") or t)
+                else:
+                    # Standard single-maamar folder inside 5666
+                    vname = it.get("v", "")
+                    if vname in H66_IDX:
+                        ma = vname
+                    elif vname == 'המשך החודש הזה (י"ט–כ"ד)':
+                        sec_n = canon_h66_maamar(it.get("sec", "") or it.get("ser", ""))
+                        if sec_n in H66_IDX:
+                            ma = sec_n
+                        elif "doc" in gid:
+                            ma = 'המשך החודש הזה — כללי'
+                        else:
+                            ma = 'החודש הזה'
+                    else:
+                        ma = canon_h66_maamar(it.get("ser", "").replace("Google Drive: ", "") or vname)
+            if ma:
+                it["ma"] = ma
+                if mas:
+                    it["mas"] = mas
+                if ma in H66_IDX:
+                    it["mo"] = H66_IDX[ma]
+
+        elif bk == 'המשך תער"ב (ע"ב)':
+            h72_ord = {
+                'סימנים מ"ט–פ"ח': 1, 'מצה זו': 2, 'שופטים': 3, 'כי תצא': 4, 'כי תבא': 5,
+                'אתם נצבים': 6, 'ביום השמיני עצרת': 7, 'ויגש - העת"ר': 8, 'יהודה אתה - העת"ר': 9,
+                'ואלה שמות העת"ר': 10, 'וידבר אלקים העת"ר': 11, 'ועתה ישראל': 12, 'סימנים שפ"ד–שצ"ט': 13,
+            }
+            if src == "heichal":
+                it["ma"] = re.sub(r'\s*-\s*\d+\s*$', '', t).strip()
+            else:
+                it["ma"] = it.get("v") or "כללי"
+            if it["ma"] in h72_ord:
+                it["mo"] = h72_ord[it["ma"]]
+
+        elif bk == 'ספרי המאמרים וקונטרסים':
+            vname = it.get("v", "")
+            if src == "heichal":
+                stem = re.sub(r'\s*-\s*\d+\s*$', '', t).strip()
+                if stem == "כל המאריך באחד, אהללה ה' בחיי":
+                    it["ma"] = 'כל המאריך באחד (ת"ש)'
+                    it["mas"] = ['כל המאריך באחד (ת"ש)', "אהללה ה' בחיי (ת\"ש)"]
+                else:
+                    it["ma"] = f"{stem} ({vname.replace('ספר המאמרים ', '')})" if "ספר המאמרים " in vname else stem
+            elif src == "gdrive":
+                lt = t.lower()
+                if "veyada" in lt:
+                    it["ma"] = 'וידעת - מאסקאווא (תרנ"ז)'
+                elif "vechol" in lt or "וכל העם" in t:
+                    it["ma"] = 'וכל העם (תרס"ה)'
+                elif "תדמיוני" in t:
+                    it["ma"] = 'ואל מי תדמיוני (תרס"ה)'
+                elif "נשא את ראש" in t:
+                    it["ma"] = 'נשא את ראש (תרס"ה)'
+                elif "tzena" in lt:
+                    it["ma"] = 'צאינה וראינה (תש"ח)'
+                elif "ki minase" in lt:
+                    it["ma"] = 'כי מנסה (תש"ח)'
+                elif "vayach" in lt:
+                    it["ma"] = 'ויחלום (תש"ח)'
+                elif "shuva" in lt:
+                    it["ma"] = 'שובה ישראל (תרפ"ו)'
+                else:
+                    raw_s = it.get("sec") or it.get("v") or "כללי"
+                    it["ma"] = f"{raw_s} ({vname.replace('ספר המאמרים ', '')})" if "ספר המאמרים " in vname and vname not in raw_s else raw_s
+
     # Sort unified cleanly so tracks within each gid are in exact ascending order!
     source_priority = {
         "hebrewbooks": 0, "podcast_tanya": 1, "podcast_fabrenguen": 2, "otzer": 3,

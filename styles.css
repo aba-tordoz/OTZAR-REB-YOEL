@@ -1287,7 +1287,7 @@ html[data-theme="dark"] .modal-pl-btn.active { color: #09111E; }
     z-index: 88;
   }
   .sidebar-mobile-footer .btn-primary { width: 100%; min-height: 46px; font-size: 1rem; }
-  .saved-split, .community-layout { grid-template-columns: 1fr; }
+  .saved-split, .community-layout, .form-grid-2 { grid-template-columns: 1fr; }
   .player-inner { grid-template-columns: 1fr; gap: 6px; }
 }
 
@@ -1385,6 +1385,11 @@ html[data-theme="dark"] .player-error-banner {
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   background: #fff;
+}
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 @media (max-width: 768px) {

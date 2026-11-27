@@ -118,6 +118,30 @@
     });
   }
 
+  function numToHebOrder(n) {
+    const ones = ["", "א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ז'", "ח'", "ט'"];
+    const tens = ["", "י'", "כ'", "ל'", "מ'", "נ'", "ס'", "ע'", "פ'", "צ'"];
+    if (n <= 0 || n >= 100) return String(n);
+    if (n === 15) return 'ט"ו';
+    if (n === 16) return 'ט"ז';
+    const t = Math.floor(n / 10), o = n % 10;
+    if (!t) return ones[o];
+    if (!o) return tens[t];
+    return tens[t].replace("'", "") + '"' + ones[o].replace("'", "");
+  }
+
+  function bookHasMultiMaamar(bookPool) {
+    const gidsMa = new Map();
+    for (const x of bookPool) {
+      if (!x.ma) continue;
+      let s = gidsMa.get(x.gid);
+      if (!s) { s = new Set(); gidsMa.set(x.gid, s); }
+      for (const m of (x.mas || [x.ma])) s.add(m);
+      if (s.size >= 2) return true;
+    }
+    return false;
+  }
+
   // Persistent User Data
   function loadJSON(k, fallback) {
     try { return JSON.parse(localStorage.getItem(k) || "null") || fallback; } catch { return fallback; }
@@ -143,7 +167,9 @@
       r: null,
       b: null,
       tanyaMode: "perek", // "perek" | "cycle"
+      bookMode: "vol",    // "vol" | "maamar"
       ts: null,
+      ma: null,
       v: null,
       sec: null,
       stageFilter: "",
@@ -416,6 +442,8 @@
     if (br.b) crumbs.push({ label: br.b, level: "book" });
     if (br.b && br.b.startsWith("תניא") && br.tanyaMode === "cycle" && br.ts) {
       crumbs.push({ label: br.ts, level: "ts" });
+    } else if (br.b && !br.b.startsWith("תניא") && br.bookMode === "maamar" && br.ma) {
+      crumbs.push({ label: `📑 ${br.ma}`, level: "ma" });
     } else {
       if (br.v) crumbs.push({ label: br.v, level: "vol" });
       if (br.sec) crumbs.push({ label: br.sec, level: "sec" });
@@ -427,7 +455,7 @@
       return `${sep}<button type="button" class="crumb-btn ${isLast ? "current" : ""}" data-crumb="${c.level}" ${isLast ? "disabled" : ""}>${escHtml(c.label)}</button>`;
     }).join("");
 
-    const hasDepth = !!(br.cat || br.r || br.b || br.ts || br.v || br.sec);
+    const hasDepth = !!(br.cat || br.r || br.b || br.ts || br.ma || br.v || br.sec);
     el.browseBackBtn.classList.toggle("hidden", !hasDepth);
     el.browseOpenInCatalogBtn.classList.toggle("hidden", !br.cat);
   }
@@ -436,9 +464,10 @@
     const br = state.browse;
     br.stageFilter = "";
     if (br.sec) { br.sec = null; }
+    else if (br.ma) { br.ma = null; }
     else if (br.v) { br.v = null; }
     else if (br.ts) { br.ts = null; }
-    else if (br.b) { br.b = null; br.includeParshaBooks = false; }
+    else if (br.b) { br.b = null; br.ma = null; br.bookMode = "vol"; br.includeParshaBooks = false; }
     else if (br.r) { br.r = null; }
     else if (br.cat) { br.cat = null; }
     renderBrowse();
@@ -448,18 +477,21 @@
     const br = state.browse;
     br.stageFilter = "";
     if (level === "root") {
-      br.cat = br.r = br.b = br.ts = br.v = br.sec = null;
+      br.cat = br.r = br.b = br.ts = br.ma = br.v = br.sec = null;
+      br.bookMode = "vol";
       br.includeParshaBooks = false;
     } else if (level === "cat") {
-      br.r = br.b = br.ts = br.v = br.sec = null;
+      br.r = br.b = br.ts = br.ma = br.v = br.sec = null;
+      br.bookMode = "vol";
       br.includeParshaBooks = false;
     } else if (level === "rebbe") {
-      br.b = br.ts = br.v = br.sec = null;
+      br.b = br.ts = br.ma = br.v = br.sec = null;
+      br.bookMode = "vol";
       br.includeParshaBooks = false;
     } else if (level === "book") {
-      br.ts = br.v = br.sec = null;
+      br.ts = br.ma = br.v = br.sec = null;
       br.includeParshaBooks = false;
-    } else if (level === "ts" || level === "vol") {
+    } else if (level === "ts" || level === "vol" || level === "ma") {
       br.sec = null;
     }
     renderBrowse();
@@ -718,6 +750,74 @@
       return;
     }
 
+    // Maamar-based Browse Mode for Hemshachim & Books with Multi-Maamar Series (e.g. המשך ס"ו)
+    const hasMaamarMode = bookHasMultiMaamar(bookPool);
+    if (hasMaamarMode && br.bookMode === "maamar") {
+      if (!br.ma) {
+        const maMap = new Map();
+        bookPool.forEach((x) => {
+          const ms = x.mas || [x.ma || x.v || "כללי"];
+          ms.forEach((m) => {
+            if (!maMap.has(m)) maMap.set(m, { cnt: 0, gids: new Set(), minOrd: 9999 });
+            const info = maMap.get(m);
+            info.cnt++;
+            info.gids.add(x.gid);
+            if (typeof x.mo === "number" && x.mo < info.minOrd) info.minOrd = x.mo;
+          });
+        });
+        const maKeys = [...maMap.keys()].sort((a, b) => {
+          const oa = maMap.get(a).minOrd, ob = maMap.get(b).minOrd;
+          if (oa !== ob) return oa - ob;
+          const ka = drillSortKey(a), kb = drillSortKey(b);
+          return ka !== kb ? ka.localeCompare(kb, "en") : a.localeCompare(b, "he");
+        });
+        renderBookModeTools(maKeys.length > 6, "סנן לפי שם מאמר (לדוג' ביום השמיני, החודש, כי עמך)...");
+
+        el.browseStepKicker.textContent = `שלב 4 — ${br.b} (לפי מאמר)`;
+        el.browseStepTitle.textContent = "בחר מאמר לצפייה בכל הסדרות עליו";
+        el.browseStepSub.textContent = `בחר מתוך ${maKeys.length} מאמרים — כל מאמר מאחד את כל הסדרות השיעורים העוסקות בו`;
+
+        const filteredMas = maKeys.filter((m) => !br.stageFilter || normSearchText(m).includes(normSearchText(br.stageFilter)));
+        const cards = filteredMas.map((m) => {
+          const info = maMap.get(m);
+          return {
+            action: "pick-ma",
+            val: m,
+            icon: "📑",
+            badge: `${info.gids.size} ${info.gids.size === 1 ? "סדרה" : "סדרות"}`,
+            title: m,
+            foot: `${info.cnt.toLocaleString("he-IL")} ${info.cnt === 1 ? "שיעור" : "שיעורים ברצף"}`,
+          };
+        });
+        renderStepGrid(cards, { compact: filteredMas.length > 8 });
+        return;
+      }
+
+      // Selected Maamar (`br.ma`): display every Series containing tracks for this Maamar cleanly numbered
+      renderBookModeTools(false);
+      const maPool = bookPool.filter((x) => (x.mas ? x.mas.includes(br.ma) : (x.ma || x.v || "כללי") === br.ma));
+      const rawGroups = buildTracksSeriesGroups(maPool);
+      const numberedGroups = rawGroups.map((g, i) => {
+        const f = g.first;
+        const baseSer = (f.ser && f.ser !== "היכל מנחם") ? f.ser : (SOURCES[f.src]?.name || "סדרה");
+        const fromVol = f.v && f.v !== br.ma && !baseSer.includes(f.v) ? ` (מתוך: ${f.v})` : "";
+        return {
+          gid: `${g.gid}__ma__${br.ma}`,
+          first: f,
+          tracks: g.tracks,
+          customTitle: rawGroups.length > 1
+            ? `סדרה ${numToHebOrder(i + 1)}: ${baseSer}${fromVol}`
+            : `${br.ma} — ${baseSer}${fromVol}`,
+        };
+      });
+
+      el.browseStepKicker.textContent = `שיעורים לפי מאמר — ${br.b}`;
+      el.browseStepTitle.textContent = br.ma;
+      el.browseStepSub.textContent = `נמצאו ${numberedGroups.length} ${numberedGroups.length === 1 ? "סדרה" : "סדרות"} על מאמר זה (${maPool.length} שיעורים סה"כ) — לחץ להאזנה ברצף`;
+      renderSeriesList(el.browseStageContent, numberedGroups, { openAll: numberedGroups.length <= 12 });
+      return;
+    }
+
     // STAGE 4 (Non-Tanya): Pick חלק / ספר המאמרים / פרשה / מועד / שנה / נושא
     if (!br.v) {
       const vMap = new Map();
@@ -737,7 +837,8 @@
         el.browseStepKicker.textContent = `שלב 4 — ${br.b}`;
         el.browseStepTitle.textContent = `איזה ${lbls[0]}?`;
         el.browseStepSub.textContent = `בחר מתוך ${vols.length} חלקים וקבצים בתוך ${br.b}`;
-        if (vols.length > 10) attachStageFilterInput("סנן ברשימה זו...");
+        if (hasMaamarMode) renderBookModeTools(vols.length > 10, "סנן ברשימה זו...");
+        else if (vols.length > 10) attachStageFilterInput("סנן ברשימה זו...");
 
         const filteredVols = vols.filter((v) => !br.stageFilter || normSearchText(v).includes(normSearchText(br.stageFilter)));
         const cards = filteredVols.map((v) => ({
@@ -788,7 +889,8 @@
         const tools = [];
         if (secs.length > 10) tools.push("filter");
         if ((br.cat === "פרשיות השבוע" || br.cat === "ענינא דיומא")) tools.push("cross");
-        renderVolTools(tools);
+        if (hasMaamarMode) renderBookModeTools(secs.length > 10, "סנן מאמרים / שיחות...");
+        else renderVolTools(tools);
 
         const filteredSecs = secs.filter((s) => !br.stageFilter || normSearchText(s).includes(normSearchText(br.stageFilter)));
         const cards = filteredSecs.map((s) => {
@@ -812,7 +914,8 @@
     const seriesGroups = buildTracksSeriesGroups(leafPool);
     const leafTitle = br.sec || br.v;
 
-    if (br.cat === "פרשיות השבוע" || br.cat === "ענינא דיומא") renderVolTools(["cross"]);
+    if (hasMaamarMode) renderBookModeTools(false);
+    else if (br.cat === "פרשיות השבוע" || br.cat === "ענינא דיומא") renderVolTools(["cross"]);
     el.browseStepKicker.textContent = `שלב אחרון — סדרות שיעורים ברצף`;
     el.browseStepTitle.textContent = leafTitle;
     el.browseStepSub.textContent = `${seriesGroups.length} ${seriesGroups.length === 1 ? "סדרת שיעורים" : "סדרות שיעורים"} (${leafPool.length} שיעורים סה"כ) — בחר סדרה והאזן ברצף`;
@@ -828,6 +931,16 @@
         <button type="button" class="tm-btn ${br.tanyaMode === "cycle" ? "active" : ""}" data-tmode="cycle">🎬 לפי סדרה שלמה</button>
       </div>`;
     if (showFilter) attachStageFilterInput("סנן פרק או סדרה...");
+  }
+
+  function renderBookModeTools(showFilter, placeholder = "סנן מאמר...") {
+    const br = state.browse;
+    el.browseStepTools.innerHTML = `
+      <div class="tanya-mode-switch">
+        <button type="button" class="tm-btn ${br.bookMode === "vol" ? "active" : ""}" data-bmode="vol">📚 לפי סדרות / חבילות</button>
+        <button type="button" class="tm-btn ${br.bookMode === "maamar" ? "active" : ""}" data-bmode="maamar">📑 לפי מאמר (מחולק לפי סדרות)</button>
+      </div>`;
+    if (showFilter) attachStageFilterInput(placeholder);
   }
 
   function attachStageFilterInput(placeholder) {
@@ -1664,13 +1777,23 @@
       switchView("catalog");
     });
 
-    // Browse Step Tools (Tanya Mode, Stage Search Filter, Cross-Parsha)
+    // Browse Step Tools (Tanya Mode, Book Maamar Mode, Stage Search Filter, Cross-Parsha)
     el.browseStepTools.addEventListener("click", (e) => {
       const tbtn = e.target.closest("[data-tmode]");
       if (tbtn) {
         state.browse.tanyaMode = tbtn.dataset.tmode;
         state.browse.v = null;
         state.browse.ts = null;
+        state.browse.stageFilter = "";
+        renderBrowse();
+        return;
+      }
+      const bbtn = e.target.closest("[data-bmode]");
+      if (bbtn) {
+        state.browse.bookMode = bbtn.dataset.bmode;
+        state.browse.v = null;
+        state.browse.sec = null;
+        state.browse.ma = null;
         state.browse.stageFilter = "";
         renderBrowse();
         return;
@@ -1697,6 +1820,7 @@
         else if (act === "pick-rebbe") state.browse.r = val;
         else if (act === "pick-book") state.browse.b = val;
         else if (act === "pick-ts") state.browse.ts = val;
+        else if (act === "pick-ma") state.browse.ma = val;
         else if (act === "pick-vol") state.browse.v = val;
         else if (act === "pick-sec") state.browse.sec = val;
         else if (act === "jump-chazaros") {
@@ -2054,6 +2178,7 @@
       const title = $("archTitle").value.trim();
       const type = $("archType").value;
       const notes = $("archNotes").value.trim();
+      const senderName = ($("archName")?.value || "").trim();
       const contact = $("archContact").value.trim();
       const tags = [...archTagsRow.querySelectorAll(".mini-pill.active")].map((b) => b.dataset.archTag);
 
@@ -2065,9 +2190,16 @@
       }
       if (!/^https?:\/\//i.test(url)) url = "https://" + url;
 
+      const titleFull = [
+        title,
+        type ? `[${type}]` : "",
+        tags.length ? `(${tags.join(", ")})` : "",
+        notes ? `— ${notes}` : "",
+      ].filter(Boolean).join(" ");
+
       const entry = {
         kind: "הוספת מאגר שיעורים",
-        type, url, title, tags, notes, contact,
+        type, url, title, titleFull, tags, notes, senderName, senderEmail: contact, contact,
         date: new Date().toLocaleString("he-IL"),
       };
       state.submittedArchives = [entry, ...state.submittedArchives].slice(0, 20);
@@ -2130,6 +2262,7 @@
       e.preventDefault();
       const subject = $("fbSubject").value.trim();
       const message = $("fbMessage").value.trim();
+      const senderName = ($("fbName")?.value || "").trim();
       const contact = $("fbContact").value.trim();
       if (!message) {
         fbStatus.classList.remove("hidden");
@@ -2138,9 +2271,18 @@
         return;
       }
 
+      const fullMessage = [
+        currentFbKind,
+        subject ? `נושא / שיעור: ${subject}` : "",
+        message,
+      ].filter(Boolean).join("\n");
+
       const entry = {
         kind: currentFbKind,
-        subject, message, contact,
+        subject, message, fullMessage,
+        senderName: senderName || "אורח באתר",
+        senderEmail: contact || "ללא אימייל",
+        contact,
         date: new Date().toLocaleString("he-IL"),
       };
       state.submittedFeedback = [entry, ...state.submittedFeedback].slice(0, 20);

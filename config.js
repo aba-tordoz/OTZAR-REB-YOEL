@@ -1,16 +1,23 @@
 // הגדרות שליחת פידבק ומאגרים חדשים (Google Forms / GitHub Issues / Formspree / Mailto)
 window.SITE_CONFIG = {
-  // === מומלץ: חיבור ל-Google Form ===
-  // 1. צור Google Form ב-https://forms.google.com -> לחץ "שלח" (Send) -> סמל הקישור -> העתק את הקישור והדבק כאן:
-  googleFormArchiveUrl: "",
-  googleFormFeedbackUrl: "",
+  // === חיבור ל-Google Forms ===
+  googleFormArchiveUrl: "https://docs.google.com/forms/d/e/1FAIpQLScZ0IVt_MWUawZfiu9mMx3hKrIHRxEgH6WhH32edRyrW0fHng/viewform",
+  googleFormFeedbackUrl: "https://docs.google.com/forms/d/e/1FAIpQLSe4Ty9-hvm68xV0iy0WOQooOn16jy90iQKL3lwnXl8RRL5-Sw/viewform",
 
-  // 2. אופציונלי מתקדם (שליחה אוטומטית ברקע ישירות מהטופס המובנה באתר ל-Google Sheets):
-  // אם תרצה שליחה שקטה מהטופס המעוצב של האתר ישירות לטופס גוגל, הכנס כאן אובייקט של מזהי השדות (entry.123456)
-  googleFormArchiveEntries: null,
-  googleFormFeedbackEntries: null,
+  // מזהי השדות שחולצו מהטפסים הציבוריים לשליחה ישירה אוטומטית + מילוי מראש:
+  googleFormArchiveEntries: {
+    titleFull: "entry.324301653",
+    url: "entry.1027089712",
+    senderName: "entry.767149488",
+    senderEmail: "entry.1517492860",
+  },
+  googleFormFeedbackEntries: {
+    senderName: "entry.1198380906",
+    senderEmail: "entry.2141634474",
+    fullMessage: "entry.864803738",
+  },
 
-  // === ערוצים חלופיים (אופציונלי) ===
+  // === ערוצים חלופיים ===
   contactEmail: "",
   githubRepo: "aba-tordoz/OTZAR-REB-YOEL",
   formEndpoint: "",
